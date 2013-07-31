@@ -392,12 +392,20 @@
         }
         // look for a office:binary-data
         if (url) {
-            try {
-                part = container.getPart(url);
-                part.onchange = onchange;
-                part.load();
-            } catch (/**@type{*}*/e) {
-                runtime.log('slight problem: ' + String(e));
+            // external link? let the browser deal with it
+            // TODO: add security option to avoid being tracked by external references
+            // TODO: how to deal with non-protocol references into the filesystem,
+            // cmp. §3.7 of ODF 1.2 Part 3 ?
+            if (/^(?:http|https|ftp):\/\//.test(url)) {
+                callback(url);
+            } else {
+                try {
+                    part = container.getPart(url);
+                    part.onchange = onchange;
+                    part.load();
+                } catch (/**@type{*}*/e) {
+                    runtime.log('slight problem: ' + String(e));
+                }
             }
         } else {
             url = getUrlFromBinaryDataElement(image);
