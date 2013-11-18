@@ -57,6 +57,21 @@ ops.OpMoveCursor = function OpMoveCursor() {
 
     this.isEdit = false;
 
+    /**
+     * @param {!Object} otherOpspec
+     * @ return {undefined}
+     */
+    this.merge = function (otherOpspec) {
+        if (otherOpspec.optype === "MoveCursor" &&
+            otherOpspec.memberid === memberid) {
+            position = otherOpspec.position;
+            length = otherOpspec.length;
+            timestamp = otherOpspec.timestamp;
+            return true;
+        }
+        return false;
+    };
+
     this.execute = function (odtDocument) {
         var cursor = odtDocument.getCursor(memberid),
             selectedRange;

@@ -136,6 +136,42 @@ define("webodf/editor/server/pullbox/OperationRouter", [], function () {
         }
 
         /**
+         * @param {!Array.<!Object>} opspecs
+         * @return {!Array.<!Object>}
+         */
+        function compressOpSpecs(opspecs) {
+            var i, j, op,
+                result = [];
+
+            i = 0;
+            while (i < opspecs.length) {
+                // use factory to create an instance, and playback!
+                op = operationFactory.create(opspecs[i]);
+                // is known op and can do merge?
+                if (op !== null && op.merge) {
+                    // go over the following and try to merge them
+                    for (j = i+1; j < opspecs.length; j += 1) {
+                        if (!op.merge(opspecs[j])) {
+                            break;
+                        }
+runtime.log("Merged: "+opspecs[i].optype+" with "+opspecs[j].optype);
+                    }
+                    // add the resulting op to the results
+                    result.push(op.spec());
+                    // and continue with the one which could not be merged, or behind end
+                    i = j;
+                } else {
+                    // just pass on
+                    result.push(opspecs[i]);
+                    i += 1;
+                }
+            }
+runtime.log("Merged: from "+opspecs.length+" to "+result.length+" specs");
+
+            return result;
+        }
+
+        /**
          * @return {undefined}
          */
         function playUnplayedServerOpSpecs() {
@@ -317,12 +353,12 @@ runtime.log("OperationRouter: sending sync_ops call");
                     if (response.ops.length > 0) {
                         // no new locally in the meantime?
                         if (unsyncedClientOpspecQueue.length === 0) {
-                            receiveOpSpecsFromNetwork(response.ops, syncRequestCallbacksArray);
+                            receiveOpSpecsFromNetwork(compressOpSpecs(response.ops), syncRequestCallbacksArray);
                         } else {
                             // transform server ops against new local ones and apply,
                             // transform and send new local ops to server
                             runtime.log("meh, have new ops locally meanwhile, have to do transformations.");
-                            hasUnresolvableConflict = !handleOpsSyncConflict(response.ops);
+                            hasUnresolvableConflict = !handleOpsSyncConflict(compressOpSpecs(response.ops));
                             syncRequestCallbacksQueue = syncRequestCallbacksArray.concat(syncRequestCallbacksQueue);
                        }
                         // and note server state
@@ -343,7 +379,7 @@ runtime.log("OperationRouter: sending sync_ops call");
                     // transform server ops against new local ones and apply,
                     // transform and request new send new local ops to server
                     runtime.log("meh, server has new ops meanwhile, have to do transformations.");
-                    hasUnresolvableConflict = !handleOpsSyncConflict(response.ops);
+                    hasUnresolvableConflict = !handleOpsSyncConflict(compressOpSpecs(response.ops));
                     // and note server state
                     lastServerSeq = response.head_seq;
                     // try again instantly

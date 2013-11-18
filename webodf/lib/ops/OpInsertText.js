@@ -67,6 +67,27 @@ ops.OpInsertText = function OpInsertText() {
     this.isEdit = true;
 
     /**
+     * TODO: character fragments at end of text might mean mismatch of positions
+     * but this is also a problem for the current code for OT around this op
+     * so still doing
+     * @param {!Object} otherOpspec
+     * @ return {undefined}
+     */
+    this.merge = function (otherOpspec) {
+        // text insertion right behind text insertion from same member?
+        if (otherOpspec.optype === "InsertText" &&
+            otherOpspec.memberid === memberid &&
+            otherOpspec.position === position + text.length) {
+            // TODO: does this assumption always hold, that consecutive insertion can be simply added?
+            text = text + otherOpspec.text;
+            timestamp = otherOpspec.timestamp;
+            return true;
+        }
+        return false;
+    };
+
+
+    /**
      * This is a workaround for a bug where webkit forgets to relayout
      * the text when a new character is inserted at the beginning of a line in
      * a Text Node.
