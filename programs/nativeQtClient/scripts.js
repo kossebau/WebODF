@@ -39,6 +39,17 @@ var LocalFileSystem = {
     PERSISTENT: 0,
     TEMPORARY: 1
 };
+function FileWriter(fullPath) {
+    "use strict";
+    this.write = function (data) {
+        var blob;
+        try {
+//             blob = blackberry.utils.stringToBlob(data, "UTF-8");
+//             blackberry.io.file.saveFile(fullPath, blob);
+        } catch (e) {
+        }
+    };
+}
 function FileEntry(name, fullPath) {
     "use strict";
     this.isFile = true;
@@ -61,14 +72,25 @@ function FileEntry(name, fullPath) {
             onerror(e);
         }
     };
+    this.createWriter = function (onsuccess, onerror) {
+        onsuccess(new FileWriter(fullPath));
+    };
 }
 function FileReader() {
     "use strict";
     var fr = this;
     this.readAsArrayBuffer = function (file) {
+runtime.log("###readAsArrayBuffer "+file.fullPath);
         var path = file.fullPath.substr(7),
             data = runtime.readFileSync(path, 'binary');
         data = runtime.byteArrayFromString(data, "binary");
+        window.setTimeout(function () {
+            fr.onloadend({target: {result: data}});
+        }, 1);
+    };
+    this.readAsText = function (file) {
+        var path = file.fullPath.substr(7),
+            data = "";//runtime.readFileSync(path, 'binary');
         window.setTimeout(function () {
             fr.onloadend({target: {result: data}});
         }, 1);

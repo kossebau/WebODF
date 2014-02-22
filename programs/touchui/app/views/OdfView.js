@@ -87,6 +87,7 @@ Ext.define('WebODFApp.view.OdfView', (function () {
         if (path === currentPath) {
             return;
         }
+        runtime.log("OdfView.load " + path);
         currentPath = path;
         overridePath = overridePathPrefix + path;
         data = null;

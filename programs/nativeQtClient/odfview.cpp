@@ -6,6 +6,7 @@
 #include "odfpage.h"
 
 #include <QtCore/QByteArray>
+#include <QtWebKit/QWebSecurityOrigin>
 #include <QtWebKit/QWebFrame>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
@@ -15,6 +16,10 @@
 
 OdfView::OdfView(QWidget* parent) :QWebView(parent)
 {
+    settings()->setAttribute(QWebSettings::LocalContentCanAccessRemoteUrls, true);
+    settings()->setAttribute(QWebSettings::LocalContentCanAccessFileUrls, true);
+    QWebSecurityOrigin::addLocalScheme("odf");
+qDebug() << "localSchemes:" << QWebSecurityOrigin::localSchemes() ;
     QString prefix = "../android/assets/"; // set this to the right value when debugging
     QString htmlfile = QDir(prefix).absoluteFilePath("www/index.html");
     if (!QFileInfo(htmlfile).exists()) {

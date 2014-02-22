@@ -2,7 +2,7 @@
 #include <QtWebKit/QWebPage>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTextCodec>
-
+#include <QtCore/QDebug>
 NativeIO::NativeIO(QObject* parent, const QDir& runtimedir_,
          const QDir& cwd_,
          const QMap<QString, QFile::Permissions>& pathPermissions_)
@@ -11,6 +11,7 @@ NativeIO::NativeIO(QObject* parent, const QDir& runtimedir_,
 }
 QString
 NativeIO::readFileSync(const QString& path, const QString& encoding) {
+qDebug() << "NativeIO::readFileSync path:" << path;
     errstr = QString();
     QFile file(cwd.absoluteFilePath(path));
     QByteArray data;
