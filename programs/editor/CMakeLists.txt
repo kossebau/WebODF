@@ -30,6 +30,12 @@ SET(COMMON_COLLAB_FILES
     wodocollabpane.css
     wodocollabtexteditor.js
 )
+SET(COLLAB_EDITOR_EXAMPLE_FILES
+    OneUserLocalSessionBackend.js
+    oneuserlocalsessioneditor.html
+    avatar-joe.png
+    welcome.odt
+)
 
 SET(PULLBOXCOLLAB_EDITOR_ONLY_FILES
     collabeditor.html
@@ -258,6 +264,19 @@ add_custom_command(
 
 foreach(CE_FILE ${COMMON_COLLAB_FILES} ${COMMON_EDITOR_FILES})
     set(CE_BUILDFILE ${WODOCOLLABTEXTEDITORCODE_BUILDDIR}/${CE_FILE})
+    set(CE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${CE_FILE})
+    add_custom_command(
+      OUTPUT ${CE_BUILDFILE}
+      COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different
+        ${CE_FILE}
+        ${CE_BUILDFILE}
+      DEPENDS
+        ${CE_FILE} ${WODOCOLLABTEXTEDITORBUILDDIR}
+    )
+    list(APPEND WODOCOLLABTEXTEDITOR_BUILDFILES ${CE_BUILDFILE})
+endforeach(CE_FILE)
+foreach(CE_FILE ${COLLAB_EDITOR_EXAMPLE_FILES})
+    set(CE_BUILDFILE ${WODOCOLLABTEXTEDITORBUILDDIR}/${CE_FILE})
     set(CE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${CE_FILE})
     add_custom_command(
       OUTPUT ${CE_BUILDFILE}
