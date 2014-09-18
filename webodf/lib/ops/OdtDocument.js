@@ -165,9 +165,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         var odfContainer = odfCanvas.odfContainer(),
             rootNode;
 
-        eventNotifier.unsubscribe(ops.OdtDocument.signalStepsInserted, stepsTranslator.handleStepsInserted);
-        eventNotifier.unsubscribe(ops.OdtDocument.signalStepsRemoved, stepsTranslator.handleStepsRemoved);
-
         // TODO Replace with a neater hack for reloading the Odt tree
         // Once this is fixed, SelectionView.addOverlays can be removed
         odfContainer.setRootElement(documentElement);
@@ -175,8 +172,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         odfCanvas.refreshCSS();
         rootNode = getRootNode();
         stepsTranslator = new ops.OdtStepsTranslator(rootNode, createPositionIterator(rootNode), filter, 500);
-        eventNotifier.subscribe(ops.OdtDocument.signalStepsInserted, stepsTranslator.handleStepsInserted);
-        eventNotifier.subscribe(ops.OdtDocument.signalStepsRemoved, stepsTranslator.handleStepsRemoved);
     };
 
     /**
@@ -943,6 +938,30 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
+     * Process steps being inserted into the document. Will emit a steps inserted signal on
+     * behalf of the caller
+     * @param {!{position: !number}} args
+     * @return {undefined}
+     */
+    this.handleStepsInserted = function(args) {
+        stepsTranslator.handleStepsInserted(args);
+        // signal not used in webodf, but 3rd-party (NVivo)
+        self.emit(ops.OdtDocument.signalStepsInserted, args);
+    };
+
+    /**
+     * Process steps being removed from the document. Will emit a steps removed signal on
+     * behalf of the caller
+     * @param {!{position: !number}} args
+     * @return {undefined}
+     */
+    this.handleStepsRemoved = function(args) {
+        stepsTranslator.handleStepsRemoved(args);
+        // signal not used in webodf, but 3rd-party (NVivo)
+        self.emit(ops.OdtDocument.signalStepsRemoved, args);
+    };
+
+    /**
      * @return {undefined}
      */
     function init() {
@@ -951,8 +970,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         filter = new ops.TextPositionFilter();
         stepUtils = new odf.StepUtils();
         stepsTranslator = new ops.OdtStepsTranslator(rootNode, createPositionIterator(rootNode), filter, 500);
-        eventNotifier.subscribe(ops.OdtDocument.signalStepsInserted, stepsTranslator.handleStepsInserted);
-        eventNotifier.subscribe(ops.OdtDocument.signalStepsRemoved, stepsTranslator.handleStepsRemoved);
         eventNotifier.subscribe(ops.OdtDocument.signalOperationEnd, handleOperationExecuted);
         eventNotifier.subscribe(ops.OdtDocument.signalProcessingBatchEnd, core.Task.processTasks);
     }
