@@ -962,6 +962,15 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
+     * Emit the signal that the passed cursor moved.
+     * @param {!ops.OdtCursor} cursor
+     * @return {undefined}
+     */
+    this.emitSignalCursorMoved = function(cursor) {
+        eventNotifier.emit(ops.Document.signalCursorMoved, cursor);
+    };
+
+    /**
      * @return {undefined}
      */
     function init() {
