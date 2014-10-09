@@ -288,10 +288,11 @@ ops.OperationTests = function OperationTests(runner) {
 
         // execute test ops
         for (i = 0; i < test.ops.length; i += 1) {
-            op = factory.create(test.ops[i]);
+            op = /**@type {!ops.Operation}*/(factory.create(test.ops[i]));
+            t.odtDocument.prepareOperationExecution(op);
             op.execute(t.odtDocument);
             if (metabefore) {
-                t.odtDocument.emit(ops.OdtDocument.signalOperationEnd, op);
+                t.odtDocument.finishOperationExecution(op);
             }
             checkForEmptyTextNodes(t.odtDocument.getCanvas().getElement());
         }

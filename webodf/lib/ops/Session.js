@@ -81,9 +81,9 @@ ops.Session = function Session(odfCanvas) {
         operationRouter.subscribe(ops.OperationRouter.signalProcessingBatchStart, forwardBatchStart);
         operationRouter.subscribe(ops.OperationRouter.signalProcessingBatchEnd, forwardBatchEnd);
         opRouter.setPlaybackFunction(function (op) {
-            odtDocument.emit(ops.OdtDocument.signalOperationStart, op);
+            odtDocument.prepareOperationExecution(op);
             if (op.execute(odtDocument)) {
-                odtDocument.emit(ops.OdtDocument.signalOperationEnd, op);
+                odtDocument.finishOperationExecution(op);
                 return true;
             }
             return false;

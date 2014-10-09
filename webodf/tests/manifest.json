@@ -229,6 +229,7 @@
         "ops.Document",
         "ops.Member",
         "ops.OdtDocument",
+        "ops.Operation",
         "ops.OperationFactory",
         "ops.OperationTestHelper",
         "xmldom.LSSerializer"

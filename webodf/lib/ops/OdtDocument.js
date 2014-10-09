@@ -438,14 +438,23 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     }
 
     /**
+     * @param {!ops.Operation} op
+     * @return {undefined}
+     */
+    this.prepareOperationExecution = function(op) {
+        eventNotifier.emit(ops.OdtDocument.signalOperationStart, op);
+    };
+
+    /**
      * Called after an operation is executed, this
      * function will check if the operation is an
      * 'edit', and in that case will update the
      * document's metadata, such as dc:creator,
      * meta:editing-cycles, and dc:creator.
      * @param {!ops.Operation} op
+     * @return {undefined}
      */
-    function handleOperationExecuted(op) {
+    this.finishOperationExecution = function (op) {
         var opspec = op.spec(),
             memberId = opspec.memberid,
             date = new Date(opspec.timestamp).toISOString(),
@@ -487,9 +496,14 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
             }
 
             lastEditingOp = op;
-            self.emit(ops.OdtDocument.signalMetadataUpdated, changedMetadata);
         }
-    }
+
+        eventNotifier.emit(ops.OdtDocument.signalOperationEnd, op);
+
+        if (op.isEdit) {
+            eventNotifier.emit(ops.OdtDocument.signalMetadataUpdated, changedMetadata);
+        }
+    };
 
     /**
      * Upgrades literal whitespaces (' ') to <text:s> </text:s>,
@@ -979,7 +993,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         filter = new ops.TextPositionFilter();
         stepUtils = new odf.StepUtils();
         stepsTranslator = new ops.OdtStepsTranslator(rootNode, createPositionIterator(rootNode), filter, 500);
-        eventNotifier.subscribe(ops.OdtDocument.signalOperationEnd, handleOperationExecuted);
         eventNotifier.subscribe(ops.OdtDocument.signalProcessingBatchEnd, core.Task.processTasks);
     }
     init();
