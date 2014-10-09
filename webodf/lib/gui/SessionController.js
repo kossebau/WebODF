@@ -304,7 +304,7 @@ gui.SessionControllerOptions = function () {
          * @return {undefined}
          */
         function forwardUndoStackChange(e) {
-            odtDocument.emit(ops.OdtDocument.signalUndoStackChanged, e);
+            odtDocument.emitSignalUndoStackChanged(e);
         }
 
         /**

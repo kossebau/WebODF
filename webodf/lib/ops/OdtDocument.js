@@ -985,6 +985,15 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
+     * Emit the signal that the passed cursor moved.
+     * @param {?Event} e
+     * @return {undefined}
+     */
+    this.emitSignalUndoStackChanged = function(e) {
+        eventNotifier.emit(ops.OdtDocument.signalUndoStackChanged, e);
+    };
+
+    /**
      * @return {undefined}
      */
     function init() {
