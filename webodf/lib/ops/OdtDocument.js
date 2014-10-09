@@ -506,6 +506,22 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
+     * @param {*} args
+     * @return {undefined}
+     */
+    this.prepareBatchProcessing = function(args) {
+        eventNotifier.emit(ops.OdtDocument.signalProcessingBatchStart, args);
+    };
+
+    /**
+     * @param {*} args
+     * @return {undefined}
+     */
+    this.finishBatchProcessing = function (args) {
+        eventNotifier.emit(ops.OdtDocument.signalProcessingBatchEnd, args);
+    };
+
+    /**
      * Upgrades literal whitespaces (' ') to <text:s> </text:s>,
      * when given a textNode containing the whitespace and an offset
      * indicating the location of the whitespace in it.

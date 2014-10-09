@@ -46,7 +46,7 @@ ops.Session = function Session(odfCanvas) {
      * @return {undefined}
      */
     function forwardBatchStart(args) {
-        odtDocument.emit(ops.OdtDocument.signalProcessingBatchStart, args);
+        odtDocument.prepareBatchProcessing(args);
     }
 
     /**
@@ -55,7 +55,7 @@ ops.Session = function Session(odfCanvas) {
      * @return {undefined}
      */
     function forwardBatchEnd(args) {
-        odtDocument.emit(ops.OdtDocument.signalProcessingBatchEnd, args);
+        odtDocument.finishBatchProcessing(args);
     }
 
     /**
