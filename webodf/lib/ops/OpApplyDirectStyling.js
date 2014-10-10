@@ -80,11 +80,13 @@ ops.OpApplyDirectStyling = function OpApplyDirectStyling() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
             range = odtDocument.convertCursorToDomRange(position, length),
-            impactedParagraphs = odfUtils.getParagraphElements(range);
+            impactedParagraphs = odfUtils.getParagraphElements(range),
+            events = [];
 
         applyStyle(odtDocument, range, setProperties);
 
@@ -93,15 +95,18 @@ ops.OpApplyDirectStyling = function OpApplyDirectStyling() {
         odtDocument.fixCursorPositions(); // The container splits may leave the cursor in an invalid spot
 
         impactedParagraphs.forEach(function (n) {
-            odtDocument.emit(ops.OdtDocument.signalParagraphChanged, {
-                paragraphElement: n,
-                memberId: memberid,
-                timeStamp: timestamp
+            events.push({
+                eventid: ops.OdtDocument.signalParagraphChanged,
+                args: {
+                    paragraphElement: n,
+                    memberId: memberid,
+                    timeStamp: timestamp
+                }
             });
         });
 
         odtDocument.getOdfCanvas().rerenderAnnotations();
-        return true;
+        return events;
     };
 
     /**

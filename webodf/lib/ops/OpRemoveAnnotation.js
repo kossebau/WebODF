@@ -52,6 +52,7 @@ ops.OpRemoveAnnotation = function OpRemoveAnnotation() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
@@ -65,7 +66,7 @@ ops.OpRemoveAnnotation = function OpRemoveAnnotation() {
             container = container.parentNode;
         }
         if (container === null) {
-            return false;
+            return null;
         }
 
         annotationNode = /**@type{!odf.AnnotationElement}*/(container);
@@ -94,7 +95,8 @@ ops.OpRemoveAnnotation = function OpRemoveAnnotation() {
 
         odtDocument.getOdfCanvas().rerenderAnnotations();
         odtDocument.fixCursorPositions();
-        return true;
+
+        return [];
     };
 
     /**

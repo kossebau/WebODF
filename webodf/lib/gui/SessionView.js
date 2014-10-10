@@ -410,7 +410,7 @@ gui.SessionViewOptions = function () {
             var annotationViewManager = odfCanvas.getAnnotationViewManager();
             if (annotationViewManager) {
                 annotationViewManager.rehighlightAnnotations();
-                odtDocument.fixCursorPositions();
+                odtDocument.fixCursorPositions(); // TODO: remove this, this should not be needed. for now add return value if moved, and assert here that not.
             }
         }
 

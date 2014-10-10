@@ -80,14 +80,17 @@ gui.MetadataControllerTests = function MetadataControllerTests(runner) {
             operations.forEach(function(op) {
                 var /**@type{?ops.Operation}*/
                     timedOp,
+                    events,
                     opspec = op.spec();
 
                 // need to set the timestamp, otherwise things fail in odtDocument
                 opspec.timestamp = Date.now();
                 timedOp = /**@type {!ops.Operation}*/(operationFactory.create(opspec));
                 odtDocument.prepareOperationExecution(timedOp);
-                if (timedOp.execute(odtDocument)) {
+                events = timedOp.execute(odtDocument);
+                if (events !== null) {
                     odtDocument.finishOperationExecution(timedOp);
+                    odtDocument.emitEvents(events);
                 }
             });
         };

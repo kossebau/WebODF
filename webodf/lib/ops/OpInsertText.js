@@ -101,6 +101,7 @@ ops.OpInsertText = function OpInsertText() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
@@ -115,7 +116,8 @@ ops.OpInsertText = function OpInsertText() {
             toInsertIndex = 0,
             spaceElement,
             cursor = odtDocument.getCursor(memberid),
-            i;
+            i,
+            events = [];
 
         /**
          * @param {string} toInsertText
@@ -196,23 +198,26 @@ ops.OpInsertText = function OpInsertText() {
                 // the textnode + cursor reordering logic from OdtDocument's
                 // getTextNodeAtStep.
                 odtDocument.moveCursor(memberid, position + text.length, 0);
-                odtDocument.emit(ops.Document.signalCursorMoved, cursor);
+                events.push({eventid: ops.Document.signalCursorMoved, args: cursor});
             }
 
             odtDocument.downgradeWhitespacesAtPosition(position);
             odtDocument.downgradeWhitespacesAtPosition(position + text.length);
 
             odtDocument.getOdfCanvas().refreshSize();
-            odtDocument.emit(ops.OdtDocument.signalParagraphChanged, {
-                paragraphElement: paragraphElement,
-                memberId: memberid,
-                timeStamp: timestamp
+            events.push({
+                eventid: ops.OdtDocument.signalParagraphChanged,
+                args: {
+                    paragraphElement: paragraphElement,
+                    memberId: memberid,
+                    timeStamp: timestamp
+                }
             });
 
             odtDocument.getOdfCanvas().rerenderAnnotations();
-            return true;
+            return events;
         }
-        return false;
+        return null;
     };
 
     /**

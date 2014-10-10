@@ -142,6 +142,7 @@ ops.OpInsertTable = function OpInsertTable() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
@@ -160,16 +161,17 @@ ops.OpInsertTable = function OpInsertTable() {
             odtDocument.handleStepsInserted({position: position});
 
             odtDocument.getOdfCanvas().refreshSize();
-            odtDocument.emit(ops.OdtDocument.signalTableAdded, {
-                tableElement: tableNode,
-                memberId: memberid,
-                timeStamp: timestamp
-            });
-
             odtDocument.getOdfCanvas().rerenderAnnotations();
-            return true;
+            return [{
+                eventid: ops.OdtDocument.signalTableAdded,
+                args: {
+                    tableElement: tableNode,
+                    memberId: memberid,
+                    timeStamp: timestamp
+                }
+            }];
         }
-        return false;
+        return null;
     };
 
     /**

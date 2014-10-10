@@ -80,6 +80,7 @@ ops.OpInsertImage = function OpInsertImage() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
@@ -88,7 +89,7 @@ ops.OpInsertImage = function OpInsertImage() {
             textNode, refNode, paragraphElement, frameElement;
 
         if (!domPosition) {
-            return false;
+            return null;
         }
 
         textNode = domPosition.textNode;
@@ -106,13 +107,16 @@ ops.OpInsertImage = function OpInsertImage() {
 
         odfCanvas.addCssForFrameWithImage(frameElement);
         odfCanvas.refreshCSS();
-        odtDocument.emit(ops.OdtDocument.signalParagraphChanged, {
-            paragraphElement: paragraphElement,
-            memberId: memberid,
-            timeStamp: timestamp
-        });
         odfCanvas.rerenderAnnotations();
-        return true;
+
+        return [{
+            eventid: ops.OdtDocument.signalParagraphChanged,
+            args: {
+                paragraphElement: paragraphElement,
+                memberId: memberid,
+                timeStamp: timestamp
+            }
+        }];
     };
 
     /**

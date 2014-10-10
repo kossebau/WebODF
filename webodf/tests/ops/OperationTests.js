@@ -259,6 +259,7 @@ ops.OperationTests = function OperationTests(runner) {
             factory = new ops.OperationFactory(),
             i,
             op,
+            events,
             textbefore = getOfficeTextElement(test.before),
             textafter = getOfficeTextElement(test.after),
             styles = t.odfContainer.rootElement.styles,
@@ -290,10 +291,11 @@ ops.OperationTests = function OperationTests(runner) {
         for (i = 0; i < test.ops.length; i += 1) {
             op = /**@type {!ops.Operation}*/(factory.create(test.ops[i]));
             t.odtDocument.prepareOperationExecution(op);
-            op.execute(t.odtDocument);
+            events = op.execute(t.odtDocument);
             if (metabefore) {
                 t.odtDocument.finishOperationExecution(op);
             }
+            t.odtDocument.emitEvents(events);
             checkForEmptyTextNodes(t.odtDocument.getCanvas().getElement());
         }
 

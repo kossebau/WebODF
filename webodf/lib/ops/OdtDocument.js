@@ -742,7 +742,7 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
 
             if (cursorMoved) {
                 cursor.setSelectedRange(selectedRange, cursor.hasForwardSelection());
-                self.emit(ops.Document.signalCursorMoved, cursor);
+                eventNotifier.emit(ops.Document.signalCursorMoved, cursor);
             }
         });
     };
@@ -881,7 +881,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         if (cursor) {
             cursor.removeFromDocument();
             delete cursors[memberid];
-            self.emit(ops.Document.signalCursorRemoved, memberid);
             return true;
         }
         return false;
@@ -916,12 +915,13 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
-     * @param {!string} eventid
-     * @param {*} args
+     * @param {!Array.<!ops.Operation.Event>} events
      * @return {undefined}
      */
-    this.emit = function (eventid, args) {
-        eventNotifier.emit(eventid, args);
+    this.emitEvents = function (events) {
+        events.forEach(function(event) {
+            eventNotifier.emit(event.eventid, event.args);
+        });
     };
 
     /**
@@ -976,7 +976,7 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     this.handleStepsInserted = function(args) {
         stepsTranslator.handleStepsInserted(args);
         // signal not used in webodf, but 3rd-party (NVivo)
-        self.emit(ops.OdtDocument.signalStepsInserted, args);
+        eventNotifier.emit(ops.OdtDocument.signalStepsInserted, args);
     };
 
     /**
@@ -988,7 +988,7 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     this.handleStepsRemoved = function(args) {
         stepsTranslator.handleStepsRemoved(args);
         // signal not used in webodf, but 3rd-party (NVivo)
-        self.emit(ops.OdtDocument.signalStepsRemoved, args);
+        eventNotifier.emit(ops.OdtDocument.signalStepsRemoved, args);
     };
 
     /**

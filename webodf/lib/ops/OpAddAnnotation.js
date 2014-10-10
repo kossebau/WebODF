@@ -137,13 +137,15 @@ ops.OpAddAnnotation = function OpAddAnnotation() {
 
     /**
      * @param {!ops.Document} document
+     * @return {?Array.<!ops.Operation.Event>}
      */
     this.execute = function (document) {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
             annotation, annotationEnd,
             cursor = odtDocument.getCursor(memberid),
             selectedRange,
-            paragraphElement;
+            paragraphElement,
+            events = [];
 
         doc = odtDocument.getDOMDocument();
 
@@ -168,14 +170,14 @@ ops.OpAddAnnotation = function OpAddAnnotation() {
             selectedRange.selectNodeContents(paragraphElement);
             cursor.setSelectedRange(selectedRange, false);
             cursor.setSelectionType(ops.OdtCursor.RangeSelection);
-            odtDocument.emit(ops.Document.signalCursorMoved, cursor);
+            events.push({eventid: ops.Document.signalCursorMoved, args: cursor});
         }
         // Track this annotation
         odtDocument.getOdfCanvas().addAnnotation(annotation);
         odtDocument.fixCursorPositions();
-        odtDocument.emit(ops.OdtDocument.signalAnnotationAdded, { memberId: memberid, annotation: annotation });
+        events.push({eventid: ops.OdtDocument.signalAnnotationAdded, args: { memberId: memberid, annotation: annotation }});
 
-        return true;
+        return events;
     };
 
     /**
