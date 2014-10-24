@@ -22,7 +22,7 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, document, dijit, dojo, runtime, ops*/
+/*global define, document, dijit, dojo, runtime, ops, wodo*/
 
 define("webodf/editor/Tools", [
     "dojo/ready",
@@ -39,10 +39,9 @@ define("webodf/editor/Tools", [
     "webodf/editor/widgets/editHyperlinks",
     "webodf/editor/widgets/imageInserter",
     "webodf/editor/widgets/paragraphStylesDialog",
-    "webodf/editor/widgets/zoomSlider",
     "webodf/editor/widgets/aboutDialog",
     "webodf/editor/EditorSession"],
-    function (ready, MenuItem, DropDownMenu, Button, DropDownButton, Toolbar, ParagraphAlignment, SimpleStyles, UndoRedoMenu, CurrentStyle, AnnotationControl, EditHyperlinks, ImageInserter, ParagraphStylesDialog, ZoomSlider, AboutDialog, EditorSession) {
+    function (ready, MenuItem, DropDownMenu, Button, DropDownButton, Toolbar, ParagraphAlignment, SimpleStyles, UndoRedoMenu, CurrentStyle, AnnotationControl, EditHyperlinks, ImageInserter, ParagraphStylesDialog, AboutDialog, EditorSession) {
         "use strict";
 
         return function Tools(toolbarElementId, args) {
@@ -78,6 +77,28 @@ define("webodf/editor/Tools", [
                         widget.placeAt(toolbar);
                         widget.startup();
                     });
+                    sessionSubscribers.push(tool);
+                    tool.onToolDone = onToolDone;
+                }
+
+                return tool;
+            }
+
+            /**
+             * Creates a tool and installs it, if the enabled flag is set to true.
+             * Only supports tool classes whose constructor has a single argument which
+             * is a callback to pass the created widget object to.
+             * @param {!function(new:Object, function(!Object):undefined)} Tool  constructor method of the tool
+             * @param {!boolean} enabled
+             * @return {?Object}
+             */
+            function createWidget(Tool, enabled) {
+                var tool = null;
+
+                if (enabled) {
+                    tool = new Tool();
+                    tool.createDom();
+                    tool.render(toolbar.domNode);
                     sessionSubscribers.push(tool);
                     tool.onToolDone = onToolDone;
                 }
@@ -254,7 +275,7 @@ define("webodf/editor/Tools", [
                 createTool(CurrentStyle, args.paragraphStyleSelectingEnabled);
 
                 // Zoom Level Selector
-                createTool(ZoomSlider, args.zoomingEnabled);
+                createWidget(wodo.widgets.ZoomSlider, args.zoomingEnabled);
 
                 // hyper links
                 createTool(EditHyperlinks, args.hyperlinkEditingEnabled);
