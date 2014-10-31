@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 KO GmbH <copyright@kogmbh.com>
+ * Copyright (C) 2012-2014 KO GmbH <copyright@kogmbh.com>
  *
  * @licstart
  * This file is part of WebODF.
@@ -21,116 +21,134 @@
  * @source: http://www.webodf.org/
  * @source: https://github.com/kogmbh/WebODF/
  */
-/*global define,require,document */
+
+/*global wodo */
 
 goog.provide("wodo.widgets.FontPicker");
 
-define("webodf/editor/widgets/fontPicker", [
-    "dijit/form/Select",
-    "dojox/html/entities"],
+goog.require("wodo.EditorSession");
+goog.require("goog.ui.Select");
+goog.require("goog.ui.Option");
+goog.require("goog.ui.FlatMenuButtonRenderer");
+goog.require("goog.events");
+goog.require("goog.events.EventTarget");
 
-    function (Select, htmlEntities) {
-        "use strict";
+wodo.widgets.FontPicker = function () {
+    "use strict";
 
-        /**
-         * @constructor
-         */
-        var FontPicker = function (callback) {
-            var self = this,
-                editorSession,
-                select,
-                documentFonts = [];
+    goog.events.EventTarget.call(this);
 
-            select = new Select({
-                name: 'FontPicker',
-                disabled: true,
-                maxHeight: 200,
-                style: {
-                    width: '150px'
-                }
-            });
-            // prevent browser translation service messing up ids
-            select.domNode.setAttribute("translate", "no");
-            select.domNode.classList.add("notranslate");
-            select.dropDown.domNode.setAttribute("translate", "no");
-            select.dropDown.domNode.classList.add("notranslate");
+    var self = this;
 
-            this.widget = function () {
-                return select;
-            };
+    this.documentFonts = [];
 
-            this.value = function () {
-                return select.get('value');
-            };
+    function populateFonts() {
+        var i,
+            name,
+            family,
+            editorSession = self.editorSession,
+            editorFonts = editorSession.availableFonts,
+            documentFonts = editorSession.getDeclaredFonts(),
+            widget = self.widget;
 
-            this.setValue = function (value) {
-                select.set('value', value);
-            };
+        self.documentFonts = documentFonts;
 
-            /**
-             * Returns the font family for a given font name. If unavailable,
-             * return the name itself (e.g. editor fonts won't have a name-family separation
-             * @param {!string} name
-             * @return {!string}
-             */
-            this.getFamily = function (name) {
-                var i;
-                for (i = 0; i < documentFonts.length; i += 1) {
-                    if ((documentFonts[i].name === name) && documentFonts[i].family) {
-                        return documentFonts[i].family;
-                    }
-                }
-                return name;
-            };
-            // events
-            this.onAdd = null;
-            this.onRemove = null;
+        for (i = 0; i < widget.getItemCount(); i += 1) {
+            widget.removeItemAt(0);
+        }
 
-            function populateFonts() {
-                var i,
-                    name,
-                    family,
-                    editorFonts = editorSession ? editorSession.availableFonts : [],
-                    selectionList = [];
+        // First populate the fonts used in the document
+        for (i = 0; i < documentFonts.length; i += 1) {
+            name = documentFonts[i].name;
+            family = documentFonts[i].family || name;
+            widget.addItem(new goog.ui.Option(
+                goog.dom.htmlToDocumentFragment('<span style="font-family: ' + family + ';">' + name + '</span>'), // TODO: check encoding, to prevent e.g. JS injection
+                name
+            ));
+        }
+        if (editorFonts.length) {
+            // Then add a separator
+            widget.addItem(new goog.ui.Separator());
+        }
+        // Lastly populate the fonts provided by the editor
+        for (i = 0; i < editorFonts.length; i += 1) {
+            widget.addItem(new goog.ui.Option(
+                goog.dom.htmlToDocumentFragment('<span style="font-family: ' + editorFonts[i] + ';">' + editorFonts[i] + '</span>'), // TODO: check encoding, to prevent e.g. JS injection
+                editorFonts[i]
+            ));
+        }
+    }
+    this.populateFonts = populateFonts;
+};
 
-                documentFonts = editorSession ? editorSession.getDeclaredFonts() : [];
+goog.inherits(wodo.widgets.FontPicker, goog.events.EventTarget);
 
-                // First populate the fonts used in the document
-                for (i = 0; i < documentFonts.length; i += 1) {
-                    name = documentFonts[i].name;
-                    family = documentFonts[i].family || name;
-                    selectionList.push({
-                        label: '<span style="font-family: ' + htmlEntities.encode(family) + ';">' + htmlEntities.encode(name)+ '</span>',
-                        value: name
-                    });
-                }
-                if (editorFonts.length) {
-                    // Then add a separator
-                    selectionList.push({
-                        type: 'separator'
-                    });
-                }
-                // Lastly populate the fonts provided by the editor
-                for (i = 0; i < editorFonts.length; i += 1) {
-                    selectionList.push({
-                        label: '<span style="font-family: ' + htmlEntities.encode(editorFonts[i]) + ';">' + htmlEntities.encode(editorFonts[i]) + '</span>',
-                        value: editorFonts[i]
-                    });
-                }
+wodo.widgets.FontPicker.prototype.render = function (parentElement) {
+    "use strict";
 
-                select.removeOption(select.getOptions());
-                select.addOption(selectionList);
-            }
+    this.widget.render(parentElement);
+};
 
-            this.setEditorSession = function(session) {
-                editorSession = session;
-                populateFonts();
-                select.setAttribute('disabled', !editorSession);
-            };
-            populateFonts();
+wodo.widgets.FontPicker.prototype.createDom = function () {
+    "use strict";
 
-            callback(self);
-        };
+    var self = this,
+        widget;
 
-        return FontPicker;
-});
+    widget = new goog.ui.Select(null, null, goog.ui.FlatMenuButtonRenderer.getInstance());
+    widget.createDom();
+
+    // prevent browser translation service messing up ids
+    widget.getContentElement().setAttribute("translate", "no");
+    widget.getContentElement().classList.add("notranslate");
+    widget.getMenu().getContentElement().setAttribute("translate", "no");
+    widget.getMenu().getContentElement().classList.add("notranslate");
+
+    goog.events.listen(widget, goog.ui.Component.EventType.CHANGE, function () {
+        self.dispatchEvent(new goog.events.Event(wodo.widgets.FontPicker.EventType.CHANGE, {
+            value: self.getValue()
+        }));
+    });
+
+    self.widget = widget;
+};
+
+wodo.widgets.FontPicker.prototype.setEditorSession = function (session) {
+    "use strict";
+
+    this.editorSession = session;
+    if (this.editorSession) {
+        this.populateFonts();
+    }
+    this.widget.setEnabled(Boolean(this.editorSession));
+};
+
+wodo.widgets.FontPicker.prototype.getValue = function () {
+    "use strict";
+
+    return this.widget.getValue();
+};
+
+wodo.widgets.FontPicker.prototype.setValue = function (value) {
+    "use strict";
+
+    this.widget.setValue(value);
+};
+
+wodo.widgets.FontPicker.prototype.getFamily = function (name) {
+    "use strict";
+
+    var documentFonts = this.documentFonts,
+        i;
+
+    for (i = 0; i < documentFonts.length; i += 1) {
+        if ((documentFonts[i].name === name) && documentFonts[i].family) {
+            return documentFonts[i].family;
+        }
+    }
+    return name;
+};
+
+wodo.widgets.FontPicker.EventType = {
+    CHANGE: "change"
+};
