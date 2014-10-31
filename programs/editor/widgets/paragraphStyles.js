@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 KO GmbH <copyright@kogmbh.com>
+ * Copyright (C) 2012-2014 KO GmbH <copyright@kogmbh.com>
  *
  * @licstart
  * This file is part of WebODF.
@@ -22,168 +22,177 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, require, runtime, ops */
+/*global wodo, ops */
 
 goog.provide("wodo.widgets.ParagraphStyles");
 
 goog.require("wodo.EditorSession");
+goog.require("goog.ui.Select");
+goog.require("goog.ui.Option");
+goog.require("goog.ui.FlatMenuButtonRenderer");
+goog.require("goog.events");
+goog.require("goog.events.EventTarget");
 
-define("webodf/editor/widgets/paragraphStyles", [
-    "dijit/form/Select",
-    "dojox/html/entities",
-    "webodf/editor/EditorSession"],
-
-    function (Select, htmlEntities, EditorSession) {
+wodo.widgets.ParagraphStyles = function () {
     "use strict";
 
-    /**
-     * @constructor
-     */
-    var ParagraphStyles = function (callback) {
-        var self = this,
-            editorSession,
-            select,
-            defaultStyleUIId = ":default";
+    goog.events.EventTarget.call(this);
 
-        this.widget = function () {
-            return select;
-        };
+    var self = this;
 
-        /*
-         * In this widget, we name the default style
-         * (which is referred to as "" in webodf) as
-         * ":default". The ":" is disallowed in an NCName, so this
-         * avoids clashes with other styles.
-         */
+    this.addStyle = function (styleInfo) {
+        var stylens = "urn:oasis:names:tc:opendocument:xmlns:style:1.0",
+            newStyleElement,
+            widget = self.widget;
 
-        this.value = function () {
-            var value = select.get('value');
-            if (value === defaultStyleUIId) {
-                value = "";
-            }
-            return value;
-        };
-
-        this.setValue = function (value) {
-            if (value === "") {
-                value = defaultStyleUIId;
-            }
-            select.set('value', value, false);
-        };
-
-        // events
-        this.onAdd = null;
-        this.onRemove = null;
-        /*jslint emptyblock: true*/
-        this.onChange = function () {};
-        /*jslint emptyblock: false*/
-
-        function populateStyles() {
-            var i, selectionList, availableStyles;
-
-            // Populate the Default Style always 
-            selectionList = [{
-                label: runtime.tr("Default Style"),
-                value: defaultStyleUIId
-            }];
-            availableStyles = editorSession ? editorSession.getAvailableParagraphStyles() : [];
-
-            for (i = 0; i < availableStyles.length; i += 1) {
-                selectionList.push({
-                    label: htmlEntities.encode(availableStyles[i].displayName) || htmlEntities.encode(availableStyles[i].name),
-                    value: availableStyles[i].name
-                });
-            }
-
-            select.removeOption(select.getOptions());
-            select.addOption(selectionList);
+        if (styleInfo.family !== 'paragraph') {
+            return;
         }
 
-        function addStyle(styleInfo) {
-            var stylens = "urn:oasis:names:tc:opendocument:xmlns:style:1.0",
-                newStyleElement;
+        newStyleElement = self.editorSession.getParagraphStyleElement(styleInfo.name);
+        widget.addItem(new goog.ui.Option(
+            newStyleElement.getAttributeNS(stylens, 'display-name'), // TODO: check encoding, to prevent e.g. JS injection
+            styleInfo.name
+        ));
 
-            if (styleInfo.family !== 'paragraph') {
-                return;
-            }
-
-            newStyleElement = editorSession.getParagraphStyleElement(styleInfo.name);
-            select.addOption({
-                label: htmlEntities.encode(newStyleElement.getAttributeNS(stylens, 'display-name')),
-                value: styleInfo.name
-            });
-
-            if (self.onAdd) {
-                self.onAdd(styleInfo.name);
-            }
-        }
-
-        function removeStyle(styleInfo) {
-            if (styleInfo.family !== 'paragraph') {
-                return;
-            }
-
-            select.removeOption(styleInfo.name);
-
-            if (self.onRemove) {
-                self.onRemove(styleInfo.name);
-            }
-        }
-
-        function handleCursorMoved(cursor) {
-            var disabled = cursor.getSelectionType() === ops.OdtCursor.RegionSelection;
-            select.setAttribute('disabled', disabled);
-        }
-
-        this.setEditorSession = function(session) {
-            if (editorSession) {
-                editorSession.unsubscribe(EditorSession.signalCommonStyleCreated, addStyle);
-                editorSession.unsubscribe(EditorSession.signalCommonStyleDeleted, removeStyle);
-                editorSession.unsubscribe(EditorSession.signalCursorMoved, handleCursorMoved);
-            }
-
-            editorSession = session;
-            if (editorSession) {
-                editorSession.subscribe(EditorSession.signalCommonStyleCreated, addStyle);
-                editorSession.subscribe(EditorSession.signalCommonStyleDeleted, removeStyle);
-                editorSession.subscribe(EditorSession.signalCursorMoved, handleCursorMoved);
-            }
-            select.setAttribute('disabled', !editorSession);
-
-            populateStyles();
-        };
-
-        // init
-        function init() {
-            select = new Select({
-                name: 'ParagraphStyles',
-                maxHeight: 200,
-                style: {
-                    width: '100px'
-                }
-            });
-            // prevent browser translation service messing up ids
-            select.domNode.setAttribute("translate", "no");
-            select.domNode.classList.add("notranslate");
-            select.dropDown.domNode.setAttribute("translate", "no");
-            select.dropDown.domNode.classList.add("notranslate");
-
-            populateStyles();
-
-            // Call ParagraphStyles's onChange handler every time
-            // the select's onchange is called, and pass the value
-            // as reported by ParagraphStyles.value(), because we do not
-            // want to expose the internal naming like ":default" outside this
-            // class.
-            select.onChange = function () {
-                self.onChange(self.value());
-            };
-
-            return callback(self);
-        }
-
-        init();
+        self.dispatchEvent(new goog.events.Event(wodo.widgets.ParagraphStyles.EventType.ADD, {
+            value: self.getValue()
+        }));
     };
 
-    return ParagraphStyles;
-});
+    this.removeStyle = function (styleInfo) {
+        if (styleInfo.family !== 'paragraph') {
+            return;
+        }
+
+        var widget = self.widget,
+            count = widget.getItemCount(),
+            item,
+            i,
+            requiresFallback = (styleInfo.name === self.getValue());
+
+        for (i = 0; i < count; i += 1) {
+            item = widget.getItemAt(i);
+            if (item.getValue() === styleInfo.name) {
+                widget.removeItem(item);
+                self.dispatchEvent(new goog.events.Event(wodo.widgets.ParagraphStyles.EventType.REMOVE, {
+                    value: self.getValue()
+                }));
+                break;
+            }
+        }
+
+        if (requiresFallback) {
+            self.setValue(wodo.widgets.ParagraphStyles.defaultStyleUIId);
+        }
+    };
+};
+goog.inherits(wodo.widgets.ParagraphStyles, goog.events.EventTarget);
+
+wodo.widgets.ParagraphStyles.defaultStyleUIId = ":default";
+
+wodo.widgets.ParagraphStyles.prototype.render = function (parentElement) {
+    "use strict";
+
+    this.widget.render(parentElement);
+};
+
+wodo.widgets.ParagraphStyles.prototype.createDom = function () {
+    "use strict";
+
+    var self = this,
+        widget;
+
+    widget = new goog.ui.Select(null, null, goog.ui.FlatMenuButtonRenderer.getInstance());
+
+    widget.createDom();
+
+    // prevent browser translation service messing up ids
+    widget.getContentElement().setAttribute("translate", "no");
+    widget.getContentElement().classList.add("notranslate");
+    widget.getMenu().getContentElement().setAttribute("translate", "no");
+    widget.getMenu().getContentElement().classList.add("notranslate");
+
+    goog.events.listen(widget, goog.ui.Component.EventType.CHANGE, function () {
+        self.dispatchEvent(new goog.events.Event(wodo.widgets.ParagraphStyles.EventType.CHANGE, {
+            value: self.getValue()
+        }));
+    });
+
+    self.widget = widget;
+};
+
+wodo.widgets.ParagraphStyles.prototype.setEditorSession = function(session) {
+    "use strict";
+
+    var self = this;
+
+    if (self.editorSession) {
+        self.editorSession.unsubscribe(wodo.EditorSession.signalCommonStyleCreated, self.addStyle);
+        self.editorSession.unsubscribe(wodo.EditorSession.signalCommonStyleDeleted, self.removeStyle);
+    }
+
+    self.editorSession = session;
+
+    if (self.editorSession) {
+        self.editorSession.subscribe(wodo.EditorSession.signalCommonStyleCreated, self.addStyle);
+        self.editorSession.subscribe(wodo.EditorSession.signalCommonStyleDeleted, self.removeStyle);
+        self.populateStyles();
+    }
+    self.widget.setEnabled(Boolean(self.editorSession));
+};
+
+wodo.widgets.ParagraphStyles.prototype.populateStyles = function () {
+    "use strict";
+
+    var widget = this.widget,
+        i, availableStyles,
+        count = widget.getItemCount();
+
+    for (i = count - 1; i >= 0; i -= 1) {
+        widget.removeItemAt(i);
+    }
+
+    // Populate the Default Style always 
+    widget.addItem(new goog.ui.Option("Default Style", wodo.widgets.ParagraphStyles.defaultStyleUIId));
+    availableStyles = this.editorSession ? this.editorSession.getAvailableParagraphStyles() : [];
+
+    for (i = 0; i < availableStyles.length; i += 1) {
+        widget.addItem(new goog.ui.Option(
+            availableStyles[i].displayName || availableStyles[i].name, // TODO: check encoding, to prevent e.g. JS injection
+            availableStyles[i].name
+        ));
+    }
+
+};
+
+/*
+ * In this widget, we name the default style
+ * (which is referred to as "" in webodf) as
+ * ":default". The ":" is disallowed in an NCName, so this
+ * avoids clashes with other styles.
+ */
+wodo.widgets.ParagraphStyles.prototype.getValue = function () {
+    "use strict";
+
+    var value = this.widget.getValue();
+    if (value === wodo.widgets.ParagraphStyles.defaultStyleUIId) {
+        value = "";
+    }
+    return value;
+};
+
+wodo.widgets.ParagraphStyles.prototype.setValue = function (value) {
+    "use strict";
+
+    if (value === "") {
+        value = wodo.widgets.ParagraphStyles.defaultStyleUIId;
+    }
+    this.widget.setValue(value);
+};
+
+wodo.widgets.ParagraphStyles.EventType = {
+    ADD: "add",
+    REMOVE: "remove",
+    CHANGE: "change"
+};

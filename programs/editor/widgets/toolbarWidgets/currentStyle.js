@@ -22,72 +22,51 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, require */
+/*global wodo*/
 
 goog.provide("wodo.widgets.CurrentStyle");
 
 goog.require("wodo.EditorSession");
+goog.require("wodo.widgets.ParagraphStyles");
 
-define("webodf/editor/widgets/toolbarWidgets/currentStyle",
-       ["webodf/editor/EditorSession"],
+wodo.widgets.CurrentStyle = function () {
+    "use strict";
 
-    function (EditorSession) {
-        "use strict";
+    wodo.widgets.ParagraphStyles.call(this);
 
-        return function CurrentStyle(callback) {
-            var self = this,
-                editorSession,
-                paragraphStyles;
+    var self = this;
 
-            function selectParagraphStyle(info) {
-                if (paragraphStyles) {
-                    if (info.type === 'style') {
-                        paragraphStyles.setValue(info.styleName);
-                    }
-                }
-            }
+    this.setParagraphStyle = function (e) {
+        var newStyleName = e.target.value;
+        if (newStyleName !== self.editorSession.getCurrentParagraphStyle()) {
+            self.editorSession.setCurrentParagraphStyle(newStyleName);
+        }
+    };
 
-            function setParagraphStyle() {
-                if (editorSession) {
-                    editorSession.setCurrentParagraphStyle(paragraphStyles.value());
-                }
-                self.onToolDone();
-            }
+    this.selectParagraphStyle = function (info) {
+        if (info.type === "style") {
+            self.setValue(info.styleName);
+        }
+    };
 
-            function makeWidget(callback) {
-                require(["webodf/editor/widgets/paragraphStyles"], function (ParagraphStyles) {
-                    var p = new ParagraphStyles(function (pStyles) {
-                        paragraphStyles = pStyles;
+};
+goog.inherits(wodo.widgets.CurrentStyle, wodo.widgets.ParagraphStyles);
 
-                        paragraphStyles.widget().onChange = setParagraphStyle;
+wodo.widgets.CurrentStyle.prototype.setEditorSession = function (session) {
+    "use strict";
 
-                        paragraphStyles.setEditorSession(editorSession);
-                        return callback(paragraphStyles.widget());
-                    });
-                    return p; // make sure p is not unused
-                });
-            }
+    var self = this;
 
-            this.setEditorSession = function (session) {
-                if (editorSession) {
-                    editorSession.unsubscribe(EditorSession.signalParagraphChanged, selectParagraphStyle);
-                }
-                editorSession = session;
-                if (paragraphStyles) {
-                    paragraphStyles.setEditorSession(editorSession);
-                }
-                if (editorSession) {
-                    editorSession.subscribe(EditorSession.signalParagraphChanged, selectParagraphStyle);
-                    // TODO: selectParagraphStyle(editorSession.getCurrentParagraphStyle());
-                }
-            };
+    if (self.editorSession) {
+        goog.events.unlisten(self, wodo.widgets.ParagraphStyles.EventType.CHANGE, self.setParagraphStyle);
+        self.editorSession.unsubscribe(wodo.EditorSession.signalParagraphChanged, self.selectParagraphStyle);
+    }
 
-            /*jslint emptyblock: true*/
-            this.onToolDone = function () {};
-            /*jslint emptyblock: false*/
+    Object.getPrototypeOf(wodo.widgets.CurrentStyle.prototype).setEditorSession.call(this, session);
+    self.editorSession = session;
 
-            makeWidget(function (widget) {
-                return callback(widget);
-            });
-        };
-    });
+    if (self.editorSession) {
+        goog.events.listen(self, wodo.widgets.ParagraphStyles.EventType.CHANGE, self.setParagraphStyle);
+        self.editorSession.subscribe(wodo.EditorSession.signalParagraphChanged, self.selectParagraphStyle);
+    }
+};
