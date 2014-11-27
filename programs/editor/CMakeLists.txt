@@ -138,17 +138,32 @@ add_custom_target(more-common-editorfiles-target
 ## Wodo.TextEditor compilation
 ##############################
 
+foreach(JSFILE ${ALONE_EDITOR_JS_FILES})
+    if (IS_ABSOLUTE ${JSFILE})
+        set(WODOTEXTEDITOR_CLOSURE_ARGS ${WODOTEXTEDITOR_CLOSURE_ARGS} --js ${JSFILE})
+    else (IS_ABSOLUTE ${JSFILE})
+        set(WODOTEXTEDITOR_CLOSURE_ARGS ${WODOTEXTEDITOR_CLOSURE_ARGS} --js ${CMAKE_CURRENT_SOURCE_DIR}/${JSFILE})
+    endif (IS_ABSOLUTE ${JSFILE})
+endforeach()
+
+# nonStandardJsDocs is not used because we use @licstart @licend and @source
+# ideally we would enable --jscomp_error reportUnknownTypes
+# -XX:+TieredCompilation reduces compilation time by about 30%
+set(SHARED_CLOSURE_ARGS -XX:+TieredCompilation -jar ${CLOSURE_JAR})
+
 # Compile the production version of Wodo.TextEditor
 add_custom_command(
     OUTPUT wodotexteditor.js
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/bin/build/closurebuilder.py
+    COMMAND ${Java_JAVA_EXECUTABLE}
     ARGS
-        --root=${CMAKE_CURRENT_SOURCE_DIR}/closure-library/
-        --root=${CMAKE_CURRENT_SOURCE_DIR}/
-        --namespace="Wodo"
-        --output_mode=compiled
-        --compiler_jar=${CLOSURE_JAR}
-        --output_file=wodotexteditor.js
+        ${SHARED_CLOSURE_ARGS}
+        --jscomp_error reportUnknownTypes
+        --compilation_level SIMPLE_OPTIMIZATIONS
+        --externs ${CMAKE_SOURCE_DIR}/webodf/tools/externs.js
+        --js ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/goog/base.js
+        ${WODOTEXTEDITOR_CLOSURE_ARGS}
+        --js_output_file=wodotexteditor.js-
+    COMMAND ${CMAKE_COMMAND} ARGS -E rename wodotexteditor.js- wodotexteditor.js
     DEPENDS ClosureCompiler ${ALONE_EDITOR_JS_FILES}
 )
 add_custom_target(wodotexteditor.js-target DEPENDS wodotexteditor.js)
