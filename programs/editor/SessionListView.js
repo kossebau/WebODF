@@ -24,7 +24,7 @@
 
 /*global Node, define, runtime */
 
-define("webodf/editor/SessionListView", [], function () {
+var SessionListView = (function() {
     "use strict";
 
     return function SessionListView(sessionList, sessionListDiv, cb) {
@@ -102,4 +102,4 @@ define("webodf/editor/SessionListView", [], function () {
 
         init();
     };
-});
+}());

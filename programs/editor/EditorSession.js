@@ -24,9 +24,7 @@
 
 /*global runtime, define, document, core, odf, gui, ops*/
 
-define("webodf/editor/EditorSession", [
-    "dojo/text!resources/fonts/fonts.css"
-], function (fontsCSS) { // fontsCSS is retrieved as a string, using dojo's text retrieval AMD plugin
+var EditorSession = (function() {
     "use strict";
 
     runtime.loadClass("core.Async");
@@ -70,6 +68,7 @@ define("webodf/editor/EditorSession", [
             odtDocument = session.getOdtDocument(),
             textns = odf.Namespaces.textns,
             fontStyles = document.createElement('style'),
+            fontsCSS,
             formatting = odtDocument.getFormatting(),
             domUtils = core.DomUtils,
             odfUtils = odf.OdfUtils,
@@ -99,9 +98,14 @@ define("webodf/editor/EditorSession", [
 
             availableFonts = {};
 
-            /*jslint regexp: true*/
+            /* TODO: disabled for now, used to rely on
+                define("webodf/editor/EditorSession", [
+                    "dojo/text!resources/fonts/fonts.css"
+                ], function (fontsCSS) { // fontsCSS is retrieved as a string, using dojo's text retrieval AMD plugin
+
+            / *jslint regexp: true* /
             regex =  /font-family *: *(?:\'([^']*)\'|\"([^"]*)\")/gm;
-            /*jslint regexp: false*/
+            / *jslint regexp: false* /
             matches = regex.exec(fontsCSS);
 
             while (matches) {
@@ -109,7 +113,7 @@ define("webodf/editor/EditorSession", [
                 matches = regex.exec(fontsCSS);
             }
             availableFonts = Object.keys(availableFonts);
-
+            */
             return availableFonts;
         }
 
@@ -656,4 +660,4 @@ define("webodf/editor/EditorSession", [
     /**@const*/EditorSession.signalUndoStackChanged =       "signalUndoStackChanged";
 
     return EditorSession;
-});
+}());

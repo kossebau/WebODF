@@ -127,7 +127,7 @@ window.Wodo = window.Wodo || (function () {
             @type{!string} */
         memberId = "localuser",
         // constructors
-        BorderContainer, ContentPane, FullWindowZoomHelper, EditorSession, Tools,
+        BorderContainer, ContentPane, FullWindowZoomHelper, Tools,
         /** @inner @const
             @type{!string} */
         MODUS_FULLEDITING = "fullediting",
@@ -167,58 +167,8 @@ window.Wodo = window.Wodo || (function () {
      * @return {undefined}
      */
     function initTextEditor() {
-        require([
-            "dijit/layout/BorderContainer",
-            "dijit/layout/ContentPane",
-            "webodf/editor/FullWindowZoomHelper",
-            "webodf/editor/EditorSession",
-            "webodf/editor/Tools",
-            "webodf/editor/Translator"],
-            function (BC, CP, FWZH, ES, T, Translator) {
-                var locale = navigator.language || "en-US",
-                    editorBase = dojo.config && dojo.config.paths && dojo.config.paths["webodf/editor"],
-                    translationsDir = editorBase + '/translations',
-                    t;
-
-                BorderContainer = BC;
-                ContentPane = CP;
-                FullWindowZoomHelper = FWZH;
-                EditorSession = ES;
-                Tools = T;
-
-                // TODO: locale cannot be set by the user, also different for different editors
-                t = new Translator(translationsDir, locale, function (editorTranslator) {
-                    runtime.setTranslator(editorTranslator.translate);
-                    // Extend runtime with a convenient translation function
-                    runtime.translateContent = function (node) {
-                        var i,
-                            element,
-                            tag,
-                            placeholder,
-                            translatable = node.querySelectorAll("*[text-i18n]");
-
-                        for (i = 0; i < translatable.length; i += 1) {
-                            element = translatable[i];
-                            tag = element.localName;
-                            placeholder = element.getAttribute('text-i18n');
-                            if (tag === "label"
-                                    || tag === "span"
-                                    || /h\d/i.test(tag)) {
-                                element.textContent = runtime.tr(placeholder);
-                            }
-                        }
-                    };
-
-                    defaultUserData.fullName = runtime.tr("Unknown Author");
-
-                    isInitalized = true;
-                    pendingInstanceCreationCalls.forEach(function (create) { create(); });
-                });
-
-                // only done to make jslint see the var used
-                return t;
-            }
-        );
+        isInitalized = true;
+        pendingInstanceCreationCalls.forEach(function (create) { create(); });
     }
 
     /**
@@ -380,7 +330,7 @@ window.Wodo = window.Wodo || (function () {
         function startEditing() {
             runtime.assert(editorSession, "editorSession should exist here.");
 
-            tools.setEditorSession(editorSession);
+//             tools.setEditorSession(editorSession);
             editorSession.sessionController.insertLocalCursor();
             editorSession.sessionController.startEditing();
         }
@@ -391,7 +341,7 @@ window.Wodo = window.Wodo || (function () {
         function endEditing() {
             runtime.assert(editorSession, "editorSession should exist here.");
 
-            tools.setEditorSession(undefined);
+//             tools.setEditorSession(undefined);
             editorSession.sessionController.endEditing();
             editorSession.sessionController.removeLocalCursor();
         }
@@ -624,8 +574,8 @@ window.Wodo = window.Wodo || (function () {
             mainContainer.destroyRecursive(true);
 
             destroyCallbacks = destroyCallbacks.concat([
-                fullWindowZoomHelper.destroy,
-                tools.destroy,
+//                 fullWindowZoomHelper.destroy,
+//                 tools.destroy,
                 odfCanvas.destroy,
                 destroyInternal
             ]);
@@ -699,7 +649,7 @@ window.Wodo = window.Wodo || (function () {
             // style all elements with Dojo's claro.
             // Not nice to do this on body, but then there is no other way known
             // to style also all dialogs, which are attached directly to body
-            document.body.classList.add("claro");
+//             document.body.classList.add("claro");
 
             // prevent browser translation service messing up internal address system
             // TODO: this should be done more centrally, but where exactly?
@@ -707,15 +657,16 @@ window.Wodo = window.Wodo || (function () {
             canvasElement.classList.add("notranslate");
 
             // create widgets
-            mainContainer = new BorderContainer({}, mainContainerElementId);
+//             mainContainer = new BorderContainer({}, mainContainerElementId);
+// 
+//             editorPane = new ContentPane({
+//                 region: 'center'
+//             }, editorElementId);
+//             mainContainer.addChild(editorPane);
+// 
+//             mainContainer.startup();
 
-            editorPane = new ContentPane({
-                region: 'center'
-            }, editorElementId);
-            mainContainer.addChild(editorPane);
-
-            mainContainer.startup();
-
+            /*
             tools = new Tools(toolbarElementId, {
                 onToolDone: setFocusToOdfCanvas,
                 loadOdtFile: loadOdtFile,
@@ -734,13 +685,14 @@ window.Wodo = window.Wodo || (function () {
                 zoomingEnabled: zoomingEnabled,
                 aboutEnabled: true
             });
+            */
 
             odfCanvas = new odf.OdfCanvas(canvasElement);
             odfCanvas.enableAnnotations(annotationsEnabled, true);
 
             odfCanvas.addListener("statereadychange", createSession);
 
-            fullWindowZoomHelper = new FullWindowZoomHelper(toolbarContainerElement, canvasContainerElement);
+//             fullWindowZoomHelper = new FullWindowZoomHelper(toolbarContainerElement, canvasContainerElement);
 
             setUserData(editorOptions.userData);
         }
@@ -748,7 +700,7 @@ window.Wodo = window.Wodo || (function () {
         init();
     }
 
-    function loadDojoAndStuff(callback) {
+    function loadStuff(callback) {
         var head = document.getElementsByTagName("head")[0],
             frag = document.createDocumentFragment(),
             link,
@@ -768,8 +720,7 @@ window.Wodo = window.Wodo || (function () {
         link.async = false;
         frag.appendChild(link);
         script = document.createElement("script");
-        script.src = installationPath + "/dojo-amalgamation.js";
-        script["data-dojo-config"] = "async: true";
+        script.src = installationPath + "/EditorSession.js";
         script.charset = "utf-8";
         script.type = "text/javascript";
         script.async = false;
@@ -826,7 +777,7 @@ window.Wodo = window.Wodo || (function () {
             // first request?
             if (pendingInstanceCreationCalls.length === 1) {
                 if (String(typeof WodoFromSource) === "undefined") {
-                    loadDojoAndStuff(initTextEditor);
+                    loadStuff(initTextEditor);
                 } else {
                     initTextEditor();
                 }
