@@ -24,12 +24,14 @@
 
 /*global window, document, alert, navigator, require, dojo, runtime, core, gui, ops, odf, WodoFromSource*/
 
+goog.provide('Wodo');
+
 /**
  * Namespace of the Wodo.TextEditor
  * @namespace
  * @name Wodo
  */
-window.Wodo = window.Wodo || (function () {
+window.Wodo = (function () {
     "use strict";
 
     function getInstallationPath() {
@@ -720,13 +722,13 @@ window.Wodo = window.Wodo || (function () {
         link.async = false;
         frag.appendChild(link);
         script = document.createElement("script");
-        script.src = installationPath + "/EditorSession.js";
+        script.src = installationPath + "/webodf.js";
         script.charset = "utf-8";
         script.type = "text/javascript";
         script.async = false;
         frag.appendChild(script);
         script = document.createElement("script");
-        script.src = installationPath + "/webodf.js";
+        script.src = installationPath + "/EditorSession.js";
         script.charset = "utf-8";
         script.type = "text/javascript";
         script.async = false;
@@ -806,3 +808,5 @@ window.Wodo = window.Wodo || (function () {
         EVENT_METADATACHANGED: EVENT_METADATACHANGED
     };
 }());
+
+goog.exportSymbol('Wodo', Wodo);

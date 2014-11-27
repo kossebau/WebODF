@@ -6,13 +6,18 @@ SET(COMMON_EDITOR_FILES
     FullWindowZoomHelper.js
     wodotexteditor.css
 )
+SET(COMMON_EDITOR_JS_FILES
+)
 
 SET(ALONE_EDITOR_ONLY_FILES
-    wodotexteditor.js
     images/kogmbh.png
     images/webodf.png
     images/saveas.png
 )
+SET(ALONE_EDITOR_ONLY_JS_FILES
+    wodotexteditor.js
+)
+
 SET(ALONE_EDITOR_EXAMPLE_FILES
     FileSaver.js
     localfileeditor.js
@@ -25,6 +30,10 @@ SET(ALONE_EDITOR_EXAMPLE_FILES
 SET(ALONE_EDITOR_FILES
     ${COMMON_EDITOR_FILES}
     ${ALONE_EDITOR_ONLY_FILES}
+)
+SET(ALONE_EDITOR_JS_FILES
+    ${COMMON_EDITOR_JS_FILES}
+    ${ALONE_EDITOR_ONLY_JS_FILES}
 )
 
 SET(COMMON_COLLAB_FILES
@@ -124,6 +133,27 @@ add_custom_target(more-common-editorfiles-target
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/widgets/ widgets/
 )
 
+
+##############################
+## Wodo.TextEditor compilation
+##############################
+
+# Compile the production version of Wodo.TextEditor
+add_custom_command(
+    OUTPUT wodotexteditor.js
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/bin/build/closurebuilder.py
+    ARGS
+        --root=${CMAKE_CURRENT_SOURCE_DIR}/closure-library/
+        --root=${CMAKE_CURRENT_SOURCE_DIR}/
+        --namespace="Wodo"
+        --output_mode=compiled
+        --compiler_jar=${CLOSURE_JAR}
+        --output_file=wodotexteditor.js
+    DEPENDS ClosureCompiler ${ALONE_EDITOR_JS_FILES}
+)
+add_custom_target(wodotexteditor.js-target DEPENDS wodotexteditor.js)
+
+
 ##################
 ## Wodo.TextEditor
 ##################
@@ -139,6 +169,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E make_directory ${WODOTEXTEDITORCODE_BUILDDIR}
 
     COMMAND ${CMAKE_COMMAND} -E copy webodf.js ${WODOTEXTEDITORCODE_BUILDDIR}
+    COMMAND ${CMAKE_COMMAND} -E copy wodotexteditor.js ${WODOTEXTEDITORCODE_BUILDDIR}
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory resources/ ${WODOTEXTEDITORCODE_BUILDDIR}/resources/
     COMMAND ${CMAKE_COMMAND} -E copy_directory translations/ ${WODOTEXTEDITORCODE_BUILDDIR}/translations/
@@ -157,7 +188,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy ${LIBJSLICENSEFILE} ${WODOTEXTEDITORBUILDDIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/HOWTO-wodotexteditor.md  ${WODOTEXTEDITORBUILDDIR}/HOWTO.md
 
-    DEPENDS dojo-amalgamation.js editor-webodf.js-target more-common-editorfiles-target
+    DEPENDS dojo-amalgamation.js editor-webodf.js-target more-common-editorfiles-target wodotexteditor.js
 )
 
 foreach(AE_FILE ${ALONE_EDITOR_FILES})
