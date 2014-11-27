@@ -1,12 +1,12 @@
 SET(COMMON_EDITOR_FILES
     Tools.js
     avatar-joe.png
-    EditorSession.js
     Translator.js
     FullWindowZoomHelper.js
     wodotexteditor.css
 )
 SET(COMMON_EDITOR_JS_FILES
+    EditorSession.js
 )
 
 SET(ALONE_EDITOR_ONLY_FILES
@@ -188,7 +188,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy ${LIBJSLICENSEFILE} ${WODOTEXTEDITORBUILDDIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/HOWTO-wodotexteditor.md  ${WODOTEXTEDITORBUILDDIR}/HOWTO.md
 
-    DEPENDS dojo-amalgamation.js editor-webodf.js-target more-common-editorfiles-target wodotexteditor.js
+    DEPENDS dojo-amalgamation.js editor-webodf.js-target more-common-editorfiles-target wodotexteditor.js-target
 )
 
 foreach(AE_FILE ${ALONE_EDITOR_FILES})

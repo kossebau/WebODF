@@ -22,7 +22,7 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global window, document, alert, navigator, require, dojo, runtime, core, gui, ops, odf, WodoFromSource*/
+/*global window, document, alert, navigator, require, dojo, runtime, core, gui, ops, odf, EditorSession, Tools, WodoFromSource*/
 
 goog.provide('Wodo');
 
@@ -164,6 +164,8 @@ window.Wodo = (function () {
             }
         };
     }());
+
+    goog.require("wodo.EditorSession");
 
     /**
      * @return {undefined}
@@ -723,12 +725,6 @@ window.Wodo = (function () {
         frag.appendChild(link);
         script = document.createElement("script");
         script.src = installationPath + "/webodf.js";
-        script.charset = "utf-8";
-        script.type = "text/javascript";
-        script.async = false;
-        frag.appendChild(script);
-        script = document.createElement("script");
-        script.src = installationPath + "/EditorSession.js";
         script.charset = "utf-8";
         script.type = "text/javascript";
         script.async = false;

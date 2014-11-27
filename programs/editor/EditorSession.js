@@ -22,32 +22,34 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global runtime, define, document, core, odf, gui, ops*/
+/*global wodo, runtime, document, core, odf, gui, ops*/
+
+goog.provide('wodo.EditorSession');
 
 var EditorSession = (function() {
     "use strict";
 
-    runtime.loadClass("core.Async");
-    runtime.loadClass("core.DomUtils");
-    runtime.loadClass("odf.OdfUtils");
-    runtime.loadClass("ops.OdtDocument");
-    runtime.loadClass("ops.OdtStepsTranslator");
-    runtime.loadClass("ops.Session");
-    runtime.loadClass("odf.Namespaces");
-    runtime.loadClass("odf.OdfCanvas");
-    runtime.loadClass("odf.OdfUtils");
-    runtime.loadClass("gui.CaretManager");
-    runtime.loadClass("gui.Caret");
-    runtime.loadClass("gui.OdfFieldView");
-    runtime.loadClass("gui.SessionController");
-    runtime.loadClass("gui.SessionView");
-    runtime.loadClass("gui.HyperlinkTooltipView");
-    runtime.loadClass("gui.TrivialUndoManager");
-    runtime.loadClass("gui.SvgSelectionView");
-    runtime.loadClass("gui.SelectionViewManager");
-    runtime.loadClass("core.EventNotifier");
-    runtime.loadClass("gui.ShadowCursor");
-    runtime.loadClass("gui.CommonConstraints");
+//     runtime.loadClass("core.Async");
+//     runtime.loadClass("core.DomUtils");
+//     runtime.loadClass("odf.OdfUtils");
+//     runtime.loadClass("ops.OdtDocument");
+//     runtime.loadClass("ops.OdtStepsTranslator");
+//     runtime.loadClass("ops.Session");
+//     runtime.loadClass("odf.Namespaces");
+//     runtime.loadClass("odf.OdfCanvas");
+//     runtime.loadClass("odf.OdfUtils");
+//     runtime.loadClass("gui.CaretManager");
+//     runtime.loadClass("gui.Caret");
+//     runtime.loadClass("gui.OdfFieldView");
+//     runtime.loadClass("gui.SessionController");
+//     runtime.loadClass("gui.SessionView");
+//     runtime.loadClass("gui.HyperlinkTooltipView");
+//     runtime.loadClass("gui.TrivialUndoManager");
+//     runtime.loadClass("gui.SvgSelectionView");
+//     runtime.loadClass("gui.SelectionViewManager");
+//     runtime.loadClass("core.EventNotifier");
+//     runtime.loadClass("gui.ShadowCursor");
+//     runtime.loadClass("gui.CommonConstraints");
 
     /**
      * Instantiate a new editor session attached to an existing operation session
