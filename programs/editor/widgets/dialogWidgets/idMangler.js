@@ -24,6 +24,8 @@
 
 /*global define, document, dojo, dijit */
 
+goog.provide("wodo.widgets.IdMangler");
+
 define("webodf/editor/widgets/dialogWidgets/idMangler", ["dojo", "dijit"], function (dojo, dijit) {
     "use strict";
     var instanceCount = 0;

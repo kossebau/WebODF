@@ -24,24 +24,13 @@
 
 /*global define, document, dijit, dojo, runtime, ops, wodo*/
 
-define("webodf/editor/Tools", [
-    "dojo/ready",
-    "dijit/MenuItem",
-    "dijit/DropDownMenu",
-    "dijit/form/Button",
-    "dijit/form/DropDownButton",
-    "dijit/Toolbar",
-    "webodf/editor/widgets/paragraphAlignment",
-    "webodf/editor/widgets/simpleStyles",
-    "webodf/editor/widgets/undoRedoMenu",
-    "webodf/editor/widgets/annotation",
-    "webodf/editor/widgets/editHyperlinks",
-    "webodf/editor/widgets/imageInserter",
-    "webodf/editor/widgets/paragraphStylesDialog",
-    "webodf/editor/widgets/aboutDialog",
-    "webodf/editor/EditorSession"],
-    function (ready, MenuItem, DropDownMenu, Button, DropDownButton, Toolbar, ParagraphAlignment, SimpleStyles, UndoRedoMenu, AnnotationControl, EditHyperlinks, ImageInserter, ParagraphStylesDialog, AboutDialog, EditorSession) {
+goog.provide('wodo.Tools');
+
+var Tools = (function() {
         "use strict";
+
+        goog.require('goog.dom');
+        goog.require('goog.ui.Toolbar');
 
         return function Tools(toolbarElementId, args) {
             var tr = runtime.tr,
@@ -113,6 +102,7 @@ define("webodf/editor/Tools", [
             }
 
             function setEditorSession(session) {
+/*
                 if (editorSession) {
                     editorSession.unsubscribe(EditorSession.signalCursorMoved, handleCursorMoved);
                 }
@@ -128,6 +118,7 @@ define("webodf/editor/Tools", [
                 if (formatMenuButton) {
                     formatMenuButton.setAttribute('disabled', !editorSession);
                 }
+*/
             }
 
             this.setEditorSession = setEditorSession;
@@ -153,9 +144,9 @@ define("webodf/editor/Tools", [
             };
 
             // init
-            ready(function () {
-                toolbar = new Toolbar({}, toolbarElementId);
-
+            function init() {
+                toolbar = new goog.ui.Toolbar();
+/*
                 // About
                 if (args.aboutEnabled) {
                     aboutButton = new Button({
@@ -297,9 +288,13 @@ define("webodf/editor/Tools", [
                     });
                     closeButton.placeAt(toolbar);
                 }
+*/
+                toolbar.render(goog.dom.getElement(toolbarElementId));
 
                 setEditorSession(editorSession);
-            });
+            }
+
+            init();
         };
 
-    });
+}());

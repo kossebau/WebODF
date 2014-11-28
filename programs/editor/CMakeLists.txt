@@ -1,5 +1,4 @@
 SET(COMMON_EDITOR_FILES
-    Tools.js
     avatar-joe.png
     Translator.js
     FullWindowZoomHelper.js
@@ -7,6 +6,7 @@ SET(COMMON_EDITOR_FILES
 )
 SET(COMMON_EDITOR_JS_FILES
     EditorSession.js
+    Tools.js
 )
 
 SET(ALONE_EDITOR_ONLY_FILES
@@ -152,17 +152,36 @@ endforeach()
 set(SHARED_CLOSURE_ARGS -XX:+TieredCompilation -jar ${CLOSURE_JAR})
 
 # Compile the production version of Wodo.TextEditor
+# TODO: find how closure compiler also automatically includes deps from closure lib
+# somehow closure/goog/deps.js seems not yet to work
+# add_custom_command(
+#     OUTPUT wodotexteditor.js
+#     COMMAND ${Java_JAVA_EXECUTABLE}
+#     ARGS
+#         ${SHARED_CLOSURE_ARGS}
+#         --js ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/goog/deps.js
+#         ${WODOTEXTEDITOR_CLOSURE_ARGS}
+#         --manage_closure_dependencies
+#         --closure_entry_point "Wodo"
+#         --jscomp_error reportUnknownTypes
+#         --compilation_level SIMPLE_OPTIMIZATIONS
+#         --externs ${CMAKE_SOURCE_DIR}/webodf/tools/externs.js
+#         --js_output_file=wodotexteditor.js-
+#     COMMAND ${CMAKE_COMMAND} ARGS -E rename wodotexteditor.js- wodotexteditor.js
+#     DEPENDS ClosureCompiler ${ALONE_EDITOR_JS_FILES}
+# )
 add_custom_command(
-    OUTPUT wodotexteditor.js
-    COMMAND ${Java_JAVA_EXECUTABLE}
-    ARGS
-        ${SHARED_CLOSURE_ARGS}
-        --jscomp_error reportUnknownTypes
-        --compilation_level SIMPLE_OPTIMIZATIONS
-        --externs ${CMAKE_SOURCE_DIR}/webodf/tools/externs.js
-        --js ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/goog/base.js
-        ${WODOTEXTEDITOR_CLOSURE_ARGS}
-        --js_output_file=wodotexteditor.js-
+     OUTPUT wodotexteditor.js
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/closure-library/closure/bin/build/closurebuilder.py
+     ARGS
+        --root=${CMAKE_CURRENT_SOURCE_DIR}/closure-library/
+        --root=${CMAKE_CURRENT_SOURCE_DIR}/
+        --namespace="Wodo"
+        --output_mode=compiled
+        --compiler_jar=${CLOSURE_JAR}
+        --compiler_flags="--compilation_level=SIMPLE_OPTIMIZATIONS"
+        --compiler_flags="--externs=${CMAKE_SOURCE_DIR}/webodf/tools/externs.js"
+        --output_file=wodotexteditor.js-
     COMMAND ${CMAKE_COMMAND} ARGS -E rename wodotexteditor.js- wodotexteditor.js
     DEPENDS ClosureCompiler ${ALONE_EDITOR_JS_FILES}
 )

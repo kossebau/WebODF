@@ -129,7 +129,7 @@ window.Wodo = (function () {
             @type{!string} */
         memberId = "localuser",
         // constructors
-        BorderContainer, ContentPane, FullWindowZoomHelper, Tools,
+        BorderContainer, ContentPane, FullWindowZoomHelper,
         /** @inner @const
             @type{!string} */
         MODUS_FULLEDITING = "fullediting",
@@ -166,6 +166,7 @@ window.Wodo = (function () {
     }());
 
     goog.require("wodo.EditorSession");
+    goog.require("wodo.Tools");
 
     /**
      * @return {undefined}
@@ -334,7 +335,7 @@ window.Wodo = (function () {
         function startEditing() {
             runtime.assert(editorSession, "editorSession should exist here.");
 
-//             tools.setEditorSession(editorSession);
+            tools.setEditorSession(editorSession);
             editorSession.sessionController.insertLocalCursor();
             editorSession.sessionController.startEditing();
         }
@@ -345,7 +346,7 @@ window.Wodo = (function () {
         function endEditing() {
             runtime.assert(editorSession, "editorSession should exist here.");
 
-//             tools.setEditorSession(undefined);
+            tools.setEditorSession(undefined);
             editorSession.sessionController.endEditing();
             editorSession.sessionController.removeLocalCursor();
         }
@@ -579,7 +580,7 @@ window.Wodo = (function () {
 
             destroyCallbacks = destroyCallbacks.concat([
 //                 fullWindowZoomHelper.destroy,
-//                 tools.destroy,
+                tools.destroy,
                 odfCanvas.destroy,
                 destroyInternal
             ]);
@@ -670,7 +671,6 @@ window.Wodo = (function () {
 // 
 //             mainContainer.startup();
 
-            /*
             tools = new Tools(toolbarElementId, {
                 onToolDone: setFocusToOdfCanvas,
                 loadOdtFile: loadOdtFile,
@@ -689,7 +689,6 @@ window.Wodo = (function () {
                 zoomingEnabled: zoomingEnabled,
                 aboutEnabled: true
             });
-            */
 
             odfCanvas = new odf.OdfCanvas(canvasElement);
             odfCanvas.enableAnnotations(annotationsEnabled, true);
