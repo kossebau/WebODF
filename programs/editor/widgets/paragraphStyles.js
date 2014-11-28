@@ -26,12 +26,12 @@
 
 goog.provide("wodo.widgets.ParagraphStyles");
 
-goog.require("wodo.EditorSession");
 goog.require("goog.ui.Select");
 goog.require("goog.ui.Option");
 goog.require("goog.ui.FlatMenuButtonRenderer");
 goog.require("goog.events");
 goog.require("goog.events.EventTarget");
+goog.require("wodo.EditorSession");
 
 wodo.widgets.ParagraphStyles = function () {
     "use strict";

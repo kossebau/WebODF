@@ -26,6 +26,7 @@
 
 goog.provide("wodo.widgets.ParagraphStylesDialog");
 
+goog.require("goog.events");
 goog.require("wodo.widgets.IdMangler");
 
 define("webodf/editor/widgets/paragraphStylesDialog", [

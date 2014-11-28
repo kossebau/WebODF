@@ -26,6 +26,7 @@
 
 goog.provide("wodo.widgets.CurrentStyle");
 
+goog.require("goog.events");
 goog.require("wodo.EditorSession");
 goog.require("wodo.widgets.ParagraphStyles");
 

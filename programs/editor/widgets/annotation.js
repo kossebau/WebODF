@@ -22,74 +22,60 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, require, runtime, gui */
+/*global wodo, runtime, gui */
 
-define("webodf/editor/widgets/annotation", [
-    "dijit/form/Button"],
+goog.provide("wodo.widgets.Annotation");
 
-    function (Button) {
-        "use strict";
+goog.require("goog.dom");
+goog.require("goog.ui.ToolbarButton");
+goog.require("goog.events");
+goog.require("goog.events.EventType");
+goog.require("wodo.EditorSession");
 
-        var AnnotationControl = function (callback) {
-            var self = this,
-                editorSession,
-                widget = {},
-                addAnnotationButton,
-                annotationController;
+wodo.widgets.Annotation = function (container) {
+    "use strict";
+
+    var self = this,
+        editorSession,
+        addAnnotationButton,
+        annotationController;
 
 
-            addAnnotationButton = new Button({
-                label: runtime.tr('Annotate'),
-                disabled: true,
-                showLabel: false,
-                iconClass: 'dijitIconBookmark',
-                onClick: function () {
-                    if (annotationController) {
-                        annotationController.addAnnotation();
-                        self.onToolDone();
-                    }
-                }
-            });
+    function onAnnotatableChanged(isAnnotatable) {
+        addAnnotationButton.setEnabled(isAnnotatable);
+    }
 
-            widget.children = [addAnnotationButton];
-            widget.startup = function () {
-                widget.children.forEach(function (element) {
-                    element.startup();
-                });
-            };
+    this.setEditorSession = function (session) {
+        if (editorSession) {
+            annotationController.unsubscribe(gui.AnnotationController.annotatableChanged, onAnnotatableChanged);
+        }
 
-            widget.placeAt = function (container) {
-                widget.children.forEach(function (element) {
-                    element.placeAt(container);
-                });
-                return widget;
-            };
+        editorSession = session;
+        if (editorSession) {
+            annotationController = editorSession.sessionController.getAnnotationController();
+            annotationController.subscribe(gui.AnnotationController.annotatableChanged, onAnnotatableChanged);
+            onAnnotatableChanged(annotationController.isAnnotatable());
+        } else {
+            addAnnotationButton.setEnabled(false);
+        }
+    };
 
-            function onAnnotatableChanged(isAnnotatable) {
-                addAnnotationButton.setAttribute('disabled', !isAnnotatable);
+    /*jslint emptyblock: true*/
+    this.onToolDone = function () {};
+    /*jslint emptyblock: false*/
+
+    function init() {
+        addAnnotationButton = new goog.ui.ToolbarButton("Annotate");//goog.dom.createDom('div', 'icon annotate'));
+        addAnnotationButton.setTooltip(runtime.tr('Annotate'));
+        addAnnotationButton.setEnabled(false);
+        container.addChild(addAnnotationButton, true);
+        goog.events.listen(addAnnotationButton.getContentElement(), goog.events.EventType.CLICK, function () {
+            if (annotationController) {
+                annotationController.addAnnotation();
+                self.onToolDone();
             }
+        });
+    }
 
-            this.setEditorSession = function (session) {
-                if (editorSession) {
-                    annotationController.unsubscribe(gui.AnnotationController.annotatableChanged, onAnnotatableChanged);
-                }
-
-                editorSession = session;
-                if (editorSession) {
-                    annotationController = editorSession.sessionController.getAnnotationController();
-                    annotationController.subscribe(gui.AnnotationController.annotatableChanged, onAnnotatableChanged);
-                    onAnnotatableChanged(annotationController.isAnnotatable());
-                } else {
-                    addAnnotationButton.setAttribute('disabled', true);
-                }
-            };
-
-            /*jslint emptyblock: true*/
-            this.onToolDone = function () {};
-            /*jslint emptyblock: false*/
-
-            callback(widget);
-        };
-
-        return AnnotationControl;
-    });
+    init();
+};

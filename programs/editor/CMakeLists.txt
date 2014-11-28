@@ -1,8 +1,13 @@
+SET(COMMON_EDITOR_CSS_FILES
+    common.css
+    toolbar.css
+)
 SET(COMMON_EDITOR_FILES
     avatar-joe.png
     Translator.js
     FullWindowZoomHelper.js
     wodotexteditor.css
+    ${COMMON_EDITOR_CSS_FILES}
 )
 SET(COMMON_EDITOR_JS_FILES
     EditorSession.js

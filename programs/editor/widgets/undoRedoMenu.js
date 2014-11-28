@@ -22,91 +22,79 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, require, runtime*/
+/*global wodo, runtime, EditorSession*/
 
-define("webodf/editor/widgets/undoRedoMenu",
-    ["webodf/editor/EditorSession", "dijit/form/Button"],
+goog.provide("wodo.widgets.UndoRedoMenu");
 
-    function (EditorSession, Button) {
-        "use strict";
+goog.require("goog.dom");
+goog.require("goog.ui.ToolbarButton");
+goog.require("goog.events");
+goog.require("goog.events.EventType");
+goog.require("wodo.EditorSession");
 
-        return function UndoRedoMenu(callback) {
-            var self = this,
-                editorSession,
-                undoButton,
-                redoButton,
-                widget = {};
+wodo.widgets.UndoRedoMenu = function (container) {
+    "use strict";
 
-            undoButton = new Button({
-                label: runtime.tr('Undo'),
-                showLabel: false,
-                disabled: true, // TODO: get current session state
-                iconClass: "dijitEditorIcon dijitEditorIconUndo",
-                onClick: function () {
-                    if (editorSession) {
-                        editorSession.undo();
-                        self.onToolDone();
-                    }
-                }
+    var self = this,
+        editorSession,
+        undoButton,
+        redoButton,
+        children;
+
+    function checkUndoButtons(e) {
+        if (undoButton) {
+            undoButton.setEnabled(e.undoAvailable === true);
+        }
+        if (redoButton) {
+            redoButton.setEnabled(e.redoAvailable === true);
+        }
+    }
+
+    this.setEditorSession = function(session) {
+        if (editorSession) {
+            editorSession.unsubscribe(EditorSession.signalUndoStackChanged, checkUndoButtons);
+        }
+
+        editorSession = session;
+        if (editorSession) {
+            editorSession.subscribe(EditorSession.signalUndoStackChanged, checkUndoButtons);
+            // TODO: checkUndoButtons(editorSession.getundoredoavailablalalo());
+        } else {
+            children.forEach(function (element) {
+                element.setEnabled(false);
             });
+        }
+    };
 
-            redoButton = new Button({
-                label: runtime.tr('Redo'),
-                showLabel: false,
-                disabled: true, // TODO: get current session state
-                iconClass: "dijitEditorIcon dijitEditorIconRedo",
-                onClick: function () {
-                    if (editorSession) {
-                        editorSession.redo();
-                        self.onToolDone();
-                    }
-                }
-            });
+    /*jslint emptyblock: true*/
+    this.onToolDone = function () {};
+    /*jslint emptyblock: false*/
 
-            widget.children = [undoButton, redoButton];
-            widget.startup = function () {
-                widget.children.forEach(function (element) {
-                    element.startup();
-                });
-            };
-
-            widget.placeAt = function (container) {
-                widget.children.forEach(function (element) {
-                    element.placeAt(container);
-                });
-                return widget;
-            };
-
-            function checkUndoButtons(e) {
-                if (undoButton) {
-                    undoButton.set('disabled', e.undoAvailable === false);
-                }
-                if (redoButton) {
-                    redoButton.set('disabled', e.redoAvailable === false);
-                }
+    function init() {
+        undoButton = new goog.ui.ToolbarButton("Undo");//goog.dom.createDom('div', 'icon goog-edit-undo'));
+        undoButton.setTooltip(runtime.tr('Undo'));
+        undoButton.setEnabled(false); // TODO: get current session state
+        container.addChild(undoButton, true);
+        goog.events.listen(undoButton.getContentElement(), goog.events.EventType.CLICK, function () {
+            if (editorSession) {
+                editorSession.undo();
+                self.onToolDone();
             }
+        });
 
-            this.setEditorSession = function (session) {
-                if (editorSession) {
-                    editorSession.unsubscribe(EditorSession.signalUndoStackChanged, checkUndoButtons);
-                }
+        redoButton = new goog.ui.ToolbarButton("Redo");//goog.dom.createDom('div', 'icon goog-edit-redo'));
+        redoButton.setTooltip(runtime.tr('Redo'));
+        redoButton.setEnabled(false); // TODO: get current session state
+        container.addChild(redoButton, true);
+        goog.events.listen(redoButton.getContentElement(), goog.events.EventType.CLICK, function () {
+            if (editorSession) {
+                editorSession.redo();
+                self.onToolDone();
+            }
+        });
 
-                editorSession = session;
-                if (editorSession) {
-                    editorSession.subscribe(EditorSession.signalUndoStackChanged, checkUndoButtons);
-                    // TODO: checkUndoButtons(editorSession.getundoredoavailablalalo());
-                } else {
-                    widget.children.forEach(function (element) {
-                        element.setAttribute('disabled', true);
-                    });
-                }
-            };
+        children = [undoButton, redoButton];
+    }
 
-            /*jslint emptyblock: true*/
-            this.onToolDone = function () {};
-            /*jslint emptyblock: false*/
-
-            // init
-            callback(widget);
-        };
-    });
+    init();
+};

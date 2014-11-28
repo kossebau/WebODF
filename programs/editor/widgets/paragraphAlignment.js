@@ -22,173 +22,145 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, require, ops, gui, runtime */
+/*global wodo, ops, gui, runtime */
 
-define("webodf/editor/widgets/paragraphAlignment", [
-    "dijit/form/ToggleButton",
-    "dijit/form/Button",
-    "webodf/editor/EditorSession"],
+goog.provide("wodo.widgets.ParagraphAlignment");
 
-    function (ToggleButton, Button) {
-        "use strict";
+goog.require("wodo.EditorSession");
 
-        var ParagraphAlignment = function (callback) {
-            var self = this,
-                editorSession,
-                widget = {},
-                directFormattingController,
-                justifyLeft,
-                justifyCenter,
-                justifyRight,
-                justifyFull,
-                indent,
-                outdent;
+wodo.widgets.ParagraphAlignment = function (container) {
+    "use strict";
 
-            justifyLeft = new ToggleButton({
-                label: runtime.tr('Align Left'),
-                disabled: true,
-                showLabel: false,
-                checked: false,
-                iconClass: "dijitEditorIcon dijitEditorIconJustifyLeft",
-                onChange: function () {
-                    directFormattingController.alignParagraphLeft();
-                    self.onToolDone();
-                }
-            });
+    var self = this,
+        editorSession,
+        children,
+        directFormattingController,
+        justifyLeft,
+        justifyCenter,
+        justifyRight,
+        justifyFull,
+        indent,
+        outdent;
 
-            justifyCenter = new ToggleButton({
-                label: runtime.tr('Center'),
-                disabled: true,
-                showLabel: false,
-                checked: false,
-                iconClass: "dijitEditorIcon dijitEditorIconJustifyCenter",
-                onChange: function () {
-                    directFormattingController.alignParagraphCenter();
-                    self.onToolDone();
-                }
-            });
-
-            justifyRight = new ToggleButton({
-                label: runtime.tr('Align Right'),
-                disabled: true,
-                showLabel: false,
-                checked: false,
-                iconClass: "dijitEditorIcon dijitEditorIconJustifyRight",
-                onChange: function () {
-                    directFormattingController.alignParagraphRight();
-                    self.onToolDone();
-                }
-            });
-
-            justifyFull = new ToggleButton({
-                label: runtime.tr('Justify'),
-                disabled: true,
-                showLabel: false,
-                checked: false,
-                iconClass: "dijitEditorIcon dijitEditorIconJustifyFull",
-                onChange: function () {
-                    directFormattingController.alignParagraphJustified();
-                    self.onToolDone();
-                }
-            });
-
-            outdent = new Button({
-                label: runtime.tr('Decrease Indent'),
-                disabled: true,
-                showLabel: false,
-                iconClass: "dijitEditorIcon dijitEditorIconOutdent",
-                onClick: function () {
-                    directFormattingController.outdent();
-                    self.onToolDone();
-                }
-            });
-
-            indent = new Button({
-                label: runtime.tr('Increase Indent'),
-                disabled: true,
-                showLabel: false,
-                iconClass: "dijitEditorIcon dijitEditorIconIndent",
-                onClick: function () {
-                    directFormattingController.indent();
-                    self.onToolDone();
-                }
-            });
-
-            widget.children = [justifyLeft,
-                justifyCenter,
-                justifyRight,
-                justifyFull,
-                outdent,
-                indent ];
-
-            widget.startup = function () {
-                widget.children.forEach(function (element) {
-                    element.startup();
-                });
-            };
-
-            widget.placeAt = function (container) {
-                widget.children.forEach(function (element) {
-                    element.placeAt(container);
-                });
-                return widget;
-            };
-
-            function updateStyleButtons(changes) {
-                var buttons = {
-                    isAlignedLeft: justifyLeft,
-                    isAlignedCenter: justifyCenter,
-                    isAlignedRight: justifyRight,
-                    isAlignedJustified: justifyFull
-                };
-
-                Object.keys(changes).forEach(function (key) {
-                    var button = buttons[key];
-                    if (button) {
-                        // The 3rd parameter to set(...) is false to avoid firing onChange when setting the value programmatically.
-                        button.set('checked', changes[key], false);
-                    }
-                });
-            }
-
-            function enableStyleButtons(enabledFeatures) {
-                widget.children.forEach(function (element) {
-                    element.setAttribute('disabled', !enabledFeatures.directParagraphStyling);
-                });
-            }
-
-            this.setEditorSession = function (session) {
-                if (editorSession) {
-                    directFormattingController.unsubscribe(gui.DirectFormattingController.paragraphStylingChanged, updateStyleButtons);
-                    directFormattingController.unsubscribe(gui.DirectFormattingController.enabledChanged, enableStyleButtons);
-                }
-
-                editorSession = session;
-                if (editorSession) {
-                    directFormattingController = editorSession.sessionController.getDirectFormattingController();
-
-                    directFormattingController.subscribe(gui.DirectFormattingController.paragraphStylingChanged, updateStyleButtons);
-                    directFormattingController.subscribe(gui.DirectFormattingController.enabledChanged, enableStyleButtons);
-
-                    enableStyleButtons(directFormattingController.enabledFeatures());
-                } else {
-                    enableStyleButtons({directParagraphStyling: false});
-                }
-
-                updateStyleButtons({
-                    isAlignedLeft:      editorSession ? directFormattingController.isAlignedLeft() :      false,
-                    isAlignedCenter:    editorSession ? directFormattingController.isAlignedCenter() :    false,
-                    isAlignedRight:     editorSession ? directFormattingController.isAlignedRight() :     false,
-                    isAlignedJustified: editorSession ? directFormattingController.isAlignedJustified() : false
-                });
-            };
-
-            /*jslint emptyblock: true*/
-            this.onToolDone = function () {};
-            /*jslint emptyblock: false*/
-
-            callback(widget);
+    function updateStyleButtons(changes) {
+        var buttons = {
+            isAlignedLeft: justifyLeft,
+            isAlignedCenter: justifyCenter,
+            isAlignedRight: justifyRight,
+            isAlignedJustified: justifyFull
         };
 
-        return ParagraphAlignment;
-    });
+        Object.keys(changes).forEach(function (key) {
+            var button = buttons[key];
+            if (button) {
+                button.setChecked(changes[key]);
+            }
+        });
+    }
+
+    function enableStyleButtons(enabledFeatures) {
+        children.forEach(function (element) {
+            element.setEnabled(enabledFeatures.directParagraphStyling);
+        });
+    }
+
+    this.setEditorSession = function (session) {
+        if (editorSession) {
+            directFormattingController.unsubscribe(gui.DirectFormattingController.paragraphStylingChanged, updateStyleButtons);
+            directFormattingController.unsubscribe(gui.DirectFormattingController.enabledChanged, enableStyleButtons);
+        }
+
+        editorSession = session;
+        if (editorSession) {
+            directFormattingController = editorSession.sessionController.getDirectFormattingController();
+
+            directFormattingController.subscribe(gui.DirectFormattingController.paragraphStylingChanged, updateStyleButtons);
+            directFormattingController.subscribe(gui.DirectFormattingController.enabledChanged, enableStyleButtons);
+
+            enableStyleButtons(directFormattingController.enabledFeatures());
+        } else {
+            enableStyleButtons({directParagraphStyling: false});
+        }
+
+        updateStyleButtons({
+            isAlignedLeft:      editorSession ? directFormattingController.isAlignedLeft() :      false,
+            isAlignedCenter:    editorSession ? directFormattingController.isAlignedCenter() :    false,
+            isAlignedRight:     editorSession ? directFormattingController.isAlignedRight() :     false,
+            isAlignedJustified: editorSession ? directFormattingController.isAlignedJustified() : false
+        });
+    };
+
+    /*jslint emptyblock: true*/
+    this.onToolDone = function () {};
+    /*jslint emptyblock: false*/
+
+    function init() {
+        justifyLeft = new goog.ui.ToolbarToggleButton('Align Left'); //
+        justifyLeft.setTooltip(runtime.tr('Align Left'));
+        justifyLeft.setEnabled(false);
+        justifyLeft.setChecked(false);
+        container.addChild(justifyLeft, true);
+        goog.events.listen(justifyLeft, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.alignParagraphLeft();
+            self.onToolDone();
+        });
+
+        justifyCenter = new goog.ui.ToolbarToggleButton('Center'); //
+        justifyCenter.setTooltip(runtime.tr('Center'));
+        justifyCenter.setEnabled(false);
+        justifyCenter.setChecked(false);
+        container.addChild(justifyCenter, true);
+        goog.events.listen(justifyCenter, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.alignParagraphCenter();
+            self.onToolDone();
+        });
+
+        justifyRight = new goog.ui.ToolbarToggleButton('Align Right'); //
+        justifyRight.setTooltip(runtime.tr('Align Right'));
+        justifyRight.setEnabled(false);
+        justifyRight.setChecked(false);
+        container.addChild(justifyRight, true);
+        goog.events.listen(justifyRight, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.alignParagraphRight();
+            self.onToolDone();
+        });
+
+        justifyFull = new goog.ui.ToolbarToggleButton('Justify'); //
+        justifyFull.setTooltip(runtime.tr('Justify'));
+        justifyFull.setEnabled(false);
+        justifyFull.setChecked(false);
+        container.addChild(justifyFull, true);
+        goog.events.listen(justifyFull, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.alignParagraphJustified();
+            self.onToolDone();
+        });
+
+        outdent = new goog.ui.ToolbarButton('Decrease Indent'); //
+        outdent.setTooltip(runtime.tr('Decrease Indent'));
+        outdent.setEnabled(false);
+        container.addChild(outdent, true);
+        goog.events.listen(outdent, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.outdent();
+            self.onToolDone();
+        });
+
+        indent = new goog.ui.ToolbarButton('Increase Indent'); //
+        indent.setTooltip(runtime.tr('Increase Indent'));
+        indent.setEnabled(false);
+        container.addChild(indent, true);
+        goog.events.listen(indent, goog.ui.Component.EventType.ACTION, function () {
+            directFormattingController.indent();
+            self.onToolDone();
+        });
+
+        children = [justifyLeft,
+            justifyCenter,
+            justifyRight,
+            justifyFull,
+            outdent,
+            indent
+        ];
+    }
+
+    init();
+};

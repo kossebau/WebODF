@@ -22,7 +22,7 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global define, document, dijit, dojo, runtime, ops, wodo*/
+/*global document, wodo, dijit, dojo, runtime, ops, EditorSession */
 
 goog.provide('wodo.Tools');
 
@@ -30,7 +30,21 @@ var Tools = (function() {
         "use strict";
 
         goog.require('goog.dom');
+        goog.require('goog.events');
+        goog.require('goog.events.EventType');
         goog.require('goog.ui.Toolbar');
+        goog.require('goog.ui.ToolbarButton');
+        goog.require("wodo.widgets.ParagraphAlignment");
+        goog.require("wodo.widgets.SimpleStyles");
+        goog.require("wodo.widgets.UndoRedoMenu");
+        goog.require("wodo.widgets.CurrentStyle");
+        goog.require("wodo.widgets.Annotation");
+//         goog.require("wodo.widgets.EditHyperlinks");
+//         goog.require("wodo.widgets.ImageInserter");
+//         goog.require("wodo.widgets.ParagraphStylesDialog");
+        goog.require("wodo.widgets.ZoomSlider");
+//         goog.require("wodo.widgets.AboutDialog");
+        goog.require('wodo.EditorSession');
 
         return function Tools(toolbarElementId, args) {
             var tr = runtime.tr,
@@ -52,7 +66,7 @@ var Tools = (function() {
             /**
              * Creates a tool and installs it, if the enabled flag is set to true.
              * Only supports tool classes whose constructor has a single argument which
-             * is a callback to pass the created widget object to.
+             * takes the container into which the tools should be placed
              * @param {!function(new:Object, function(!Object):undefined)} Tool  constructor method of the tool
              * @param {!boolean} enabled
              * @return {?Object}
@@ -61,10 +75,7 @@ var Tools = (function() {
                 var tool = null;
 
                 if (enabled) {
-                    tool = new Tool(function (widget) {
-                        widget.placeAt(toolbar);
-                        widget.startup();
-                    });
+                    tool = new Tool(toolbar);
                     sessionSubscribers.push(tool);
                     tool.onToolDone = onToolDone;
                 }
@@ -86,7 +97,8 @@ var Tools = (function() {
                 if (enabled) {
                     tool = new Tool();
                     tool.createDom();
-                    tool.render(toolbar.domNode);
+//                     tool.render(toolbar.domNode);
+//                     toolbar.addChild(tool, true);
                     sessionSubscribers.push(tool);
                     tool.onToolDone = onToolDone;
                 }
@@ -102,7 +114,6 @@ var Tools = (function() {
             }
 
             function setEditorSession(session) {
-/*
                 if (editorSession) {
                     editorSession.unsubscribe(EditorSession.signalCursorMoved, handleCursorMoved);
                 }
@@ -118,7 +129,6 @@ var Tools = (function() {
                 if (formatMenuButton) {
                     formatMenuButton.setAttribute('disabled', !editorSession);
                 }
-*/
             }
 
             this.setEditorSession = setEditorSession;
@@ -146,81 +156,66 @@ var Tools = (function() {
             // init
             function init() {
                 toolbar = new goog.ui.Toolbar();
-/*
+
                 // About
                 if (args.aboutEnabled) {
-                    aboutButton = new Button({
-                        label: tr('About WebODF Text Editor'),
-                        showLabel: false,
-                        iconClass: 'webodfeditor-dijitWebODFIcon'
-                    });
-                    aboutDialog = new AboutDialog(function (dialog) {
-                        aboutButton.onClick = function () {
-                            dialog.startup();
-                            dialog.show();
-                        };
-                    });
-                    aboutDialog.onToolDone = onToolDone;
-                    aboutButton.placeAt(toolbar);
+                    aboutButton = new goog.ui.ToolbarButton("About");
+                    aboutButton.setTooltip(tr('About WebODF Text Editor'));
+                    toolbar.addChild(aboutButton, true);
+//                         iconClass: 'webodfeditor-dijitWebODFIcon',
+//                     goog.events.listen(aboutButton.getContentElement(), goog.events.EventType.CLICK, showAboutDialog);
+
+//                     aboutDialog = new AboutDialog(function (dialog) {
+//                         aboutButton.onClick = function () {
+//                             dialog.startup();
+//                             dialog.show();
+//                         };
+//                     });
+//                     aboutDialog.onToolDone = onToolDone;
                 }
 
                 // Load
                 if (loadOdtFile) {
-                    loadButton = new Button({
-                        label: tr('Open'),
-                        showLabel: false,
-                        iconClass: 'dijitIcon dijitIconFolderOpen',
-                        onClick: function () {
-                            loadOdtFile();
-                        }
-                    });
-                    loadButton.placeAt(toolbar);
+                    loadButton = new goog.ui.ToolbarButton("Open");//, goog.dom.createDom('div', 'icon goog-edit-bold'));
+                    loadButton.setTooltip(tr('Open'));
+                    toolbar.addChild(loadButton, true);
+                    goog.events.listen(loadButton.getContentElement(), goog.events.EventType.CLICK, loadOdtFile);
                 }
 
                 // Save
                 if (saveOdtFile) {
-                    saveButton = new Button({
-                        label: tr('Save'),
-                        showLabel: false,
-                        iconClass: 'dijitEditorIcon dijitEditorIconSave',
-                        onClick: function () {
+                    saveButton = new goog.ui.ToolbarButton("Save");//, goog.dom.createDom('div', 'icon goog-edit-bold'));
+                    saveButton.setTooltip(tr('Save'));
+                    toolbar.addChild(saveButton, true);
+                    goog.events.listen(saveButton.getContentElement(), goog.events.EventType.CLICK, function () {
                             saveOdtFile();
                             onToolDone();
-                        }
                     });
-                    saveButton.placeAt(toolbar);
                 }
 
                 // SaveAs
                 if (saveAsOdtFile) {
-                    saveAsButton = new Button({
-                        label: tr('Save as...'),
-                        showLabel: false,
-                        iconClass: 'webodfeditor-dijitSaveAsIcon',
-                        onClick: function () {
+                    saveAsButton = new goog.ui.ToolbarButton("SaveAs");//, goog.dom.createDom('div', 'icon goog-edit-bold'));
+                    saveAsButton.setTooltip(tr('Save as...'));
+                    toolbar.addChild(saveAsButton, true);
+                    goog.events.listen(saveAsButton.getContentElement(), goog.events.EventType.CLICK, function () {
                             saveAsOdtFile();
                             onToolDone();
-                        }
                     });
-                    saveAsButton.placeAt(toolbar);
                 }
 
                 // Download
                 if (downloadOdtFile) {
-                    downloadButton = new Button({
-                        label: tr('Download'),
-                        showLabel: true,
-                        style: {
-                            float: 'right'
-                        },
-                        onClick: function () {
+                    downloadButton = new goog.ui.ToolbarButton("Download");//goog.dom.createDom('div', 'icon goog-edit-bold'));
+                    downloadButton.setTooltip(tr('Download'));
+                    toolbar.addChild(downloadButton, true);
+                    goog.events.listen(downloadButton.getContentElement(), goog.events.EventType.CLICK, function () {
                             downloadOdtFile();
                             onToolDone();
-                        }
                     });
-                    downloadButton.placeAt(toolbar);
                 }
 
+/*
                 // Format menu
                 if (args.paragraphStyleEditingEnabled) {
                     formatDropDownMenu = new DropDownMenu({});
@@ -248,22 +243,23 @@ var Tools = (function() {
                     });
                     formatMenuButton.placeAt(toolbar);
                 }
+*/
 
                 // Undo/Redo
-                createTool(UndoRedoMenu, args.undoRedoEnabled);
+                createTool(wodo.widgets.UndoRedoMenu, args.undoRedoEnabled);
 
                 // Add annotation
-                createTool(AnnotationControl, args.annotationsEnabled);
+                createTool(wodo.widgets.Annotation, args.annotationsEnabled);
 
                 // Simple Style Selector [B, I, U, S]
-                createTool(SimpleStyles, args.directTextStylingEnabled);
+                createTool(wodo.widgets.SimpleStyles, args.directTextStylingEnabled);
 
                 // Paragraph direct alignment buttons
-                createTool(ParagraphAlignment, args.directParagraphStylingEnabled);
+                createTool(wodo.widgets.ParagraphAlignment, args.directParagraphStylingEnabled);
 
                 // Paragraph Style Selector
                 createWidget(wodo.widgets.CurrentStyle, args.paragraphStyleSelectingEnabled);
-
+/*
                 // Zoom Level Selector
                 createWidget(wodo.widgets.ZoomSlider, args.zoomingEnabled);
 
@@ -272,23 +268,15 @@ var Tools = (function() {
 
                 // image insertion
                 createTool(ImageInserter, args.imageInsertingEnabled);
-
+*/
                 // close button
                 if (close) {
-                    closeButton = new Button({
-                        label: tr('Close'),
-                        showLabel: false,
-                        iconClass: 'dijitEditorIcon dijitEditorIconCancel',
-                        style: {
-                            float: 'right'
-                        },
-                        onClick: function () {
-                            close();
-                        }
-                    });
-                    closeButton.placeAt(toolbar);
+                    closeButton = new goog.ui.ToolbarButton("Close");//goog.dom.createDom('div', 'icon goog-edit-bold'));
+                    closeButton.setTooltip(tr('Close'));
+                    toolbar.addChild(closeButton, true);
+                    goog.events.listen(closeButton.getContentElement(), goog.events.EventType.CLICK, close);
                 }
-*/
+
                 toolbar.render(goog.dom.getElement(toolbarElementId));
 
                 setEditorSession(editorSession);
