@@ -24,6 +24,10 @@
 
 /*global define, require */
 
+goog.provide("wodo.widgets.CurrentStyle");
+
+goog.require("wodo.EditorSession");
+
 define("webodf/editor/widgets/toolbarWidgets/currentStyle",
        ["webodf/editor/EditorSession"],
 

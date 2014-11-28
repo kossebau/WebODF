@@ -22,6 +22,9 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 /*global define,require,document */
+
+goog.provide("wodo.widgets.FontPicker");
+
 define("webodf/editor/widgets/fontPicker", [
     "dijit/form/Select",
     "dojox/html/entities"],

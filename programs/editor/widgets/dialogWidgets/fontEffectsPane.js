@@ -24,6 +24,10 @@
 
 /*global runtime,define,require,document,dijit */
 
+goog.provide("wodo.widgets.FontEffectsPane");
+
+goog.require("wodo.widgets.IdMangler");
+
 define("webodf/editor/widgets/dialogWidgets/fontEffectsPane", [
     "webodf/editor/widgets/dialogWidgets/idMangler"],
 function (IdMangler) {
@@ -108,6 +112,8 @@ function (IdMangler) {
 
         /*jslint unparam: true*/
         function init(cb) {
+            goog.require("wodo.widgets.FontPicker");
+
             require([
                 "dojo",
                 "dojo/ready",

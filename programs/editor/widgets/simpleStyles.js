@@ -24,6 +24,11 @@
 
 /*global define, require, runtime, gui, ops */
 
+goog.provide("wodo.widgets.SimpleStyles");
+
+goog.require("wodo.EditorSession");
+goog.require("wodo.widgets.FontPicker");
+
 define("webodf/editor/widgets/simpleStyles", [
     "webodf/editor/widgets/fontPicker",
     "dijit/form/ToggleButton",

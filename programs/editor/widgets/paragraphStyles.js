@@ -24,6 +24,10 @@
 
 /*global define, require, runtime, ops */
 
+goog.provide("wodo.widgets.ParagraphStyles");
+
+goog.require("wodo.EditorSession");
+
 define("webodf/editor/widgets/paragraphStyles", [
     "dijit/form/Select",
     "dojox/html/entities",

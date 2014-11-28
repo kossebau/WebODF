@@ -24,6 +24,10 @@
 
 /*global define, require, dojo, dijit, runtime */
 
+goog.provide("wodo.widgets.ParagraphStylesDialog");
+
+goog.require("wodo.widgets.IdMangler");
+
 define("webodf/editor/widgets/paragraphStylesDialog", [
     "webodf/editor/widgets/dialogWidgets/idMangler"],
 function (IdMangler) {
@@ -271,6 +275,10 @@ function (IdMangler) {
                 }).placeAt(actionBar);
                 dialog.domNode.appendChild(actionBar);
 
+
+                goog.require("wodo.widgets.ParagraphStyles");
+                goog.require("wodo.widgets.AlignmentPane");
+                goog.require("wodo.widgets.FontEffectsPane");
 
                 require([
                     "webodf/editor/widgets/paragraphStyles",
