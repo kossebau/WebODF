@@ -22,6 +22,37 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
+@import url("common.css");
+@import url("toolbar.css");
+
+.goog-slider-vertical,
+.goog-slider-horizontal {
+    background-color: ThreeDFace;
+    position: relative;
+    overflow: hidden;
+}
+.goog-slider-thumb {
+    position: absolute;
+    background-color: ThreeDShadow;
+    overflow: hidden;
+}
+
+.goog-slider-vertical .goog-slider-thumb {
+    left: 0;
+    height: 20px;
+    width: 100%;
+}
+
+.goog-slider-horizontal .goog-slider-thumb {
+    top: 0;
+    width: 20px;
+    height: 100%;
+}
+.goog-slider-disabled {
+    background-color: lightgray
+}
+
+
 .webodfeditor-editor *:focus {
     outline: none;
 }
