@@ -22,7 +22,7 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global wodo*/
+/*global goog, wodo, EditorSession*/
 
 goog.provide("wodo.widgets.CurrentStyle");
 
@@ -30,44 +30,46 @@ goog.require("goog.events");
 goog.require("wodo.EditorSession");
 goog.require("wodo.widgets.ParagraphStyles");
 
-wodo.widgets.CurrentStyle = function () {
+wodo.widgets.CurrentStyle = function (container) {
     "use strict";
 
-    wodo.widgets.ParagraphStyles.call(this);
+    var paragraphStyleSelector,
+        editorSession;
 
-    var self = this;
-
-    this.setParagraphStyle = function (e) {
+    function setParagraphStyle(e) {
         var newStyleName = e.target.value;
-        if (newStyleName !== self.editorSession.getCurrentParagraphStyle()) {
-            self.editorSession.setCurrentParagraphStyle(newStyleName);
+        if (newStyleName !== editorSession.getCurrentParagraphStyle()) {
+            editorSession.setCurrentParagraphStyle(newStyleName);
         }
-    };
+    }
 
-    this.selectParagraphStyle = function (info) {
+    function selectParagraphStyle(info) {
         if (info.type === "style") {
-            self.setValue(info.styleName);
+            paragraphStyleSelector.setValue(info.styleName);
+        }
+    }
+
+    this.setEditorSession = function (session) {
+        if (editorSession) {
+            goog.events.unlisten(paragraphStyleSelector, wodo.widgets.ParagraphStyles.EventType.CHANGE, setParagraphStyle);
+            editorSession.unsubscribe(EditorSession.signalParagraphChanged, selectParagraphStyle);
+        }
+
+        paragraphStyleSelector.setEditorSession(session);
+        editorSession = session;
+
+        if (editorSession) {
+            goog.events.listen(paragraphStyleSelector, wodo.widgets.ParagraphStyles.EventType.CHANGE, setParagraphStyle);
+            editorSession.subscribe(EditorSession.signalParagraphChanged, selectParagraphStyle);
         }
     };
 
+    function init() {
+        paragraphStyleSelector = new wodo.widgets.ParagraphStyles();
+        paragraphStyleSelector.setEnabled(false);
+        container.addChild(paragraphStyleSelector, true);
+    }
+
+    init();
 };
 goog.inherits(wodo.widgets.CurrentStyle, wodo.widgets.ParagraphStyles);
-
-wodo.widgets.CurrentStyle.prototype.setEditorSession = function (session) {
-    "use strict";
-
-    var self = this;
-
-    if (self.editorSession) {
-        goog.events.unlisten(self, wodo.widgets.ParagraphStyles.EventType.CHANGE, self.setParagraphStyle);
-        self.editorSession.unsubscribe(wodo.EditorSession.signalParagraphChanged, self.selectParagraphStyle);
-    }
-
-    Object.getPrototypeOf(wodo.widgets.CurrentStyle.prototype).setEditorSession.call(this, session);
-    self.editorSession = session;
-
-    if (self.editorSession) {
-        goog.events.listen(self, wodo.widgets.ParagraphStyles.EventType.CHANGE, self.setParagraphStyle);
-        self.editorSession.subscribe(wodo.EditorSession.signalParagraphChanged, self.selectParagraphStyle);
-    }
-};

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 KO GmbH <copyright@kogmbh.com>
+ * Copyright (C) 2014 KO GmbH <copyright@kogmbh.com>
  *
  * @licstart
  * This file is part of WebODF.
@@ -22,27 +22,24 @@
  * @source: https://github.com/kogmbh/WebODF/
  */
 
-/*global goog, wodo, gui*/
-
-goog.provide("wodo.widgets.ZoomSlider");
+/*global goog, wodo*/
+/*
+goog.provide("wodo.widgets.ZoomMenu");
 
 goog.require("wodo.EditorSession");
-goog.require("goog.ui.Component");
-goog.require("goog.ui.Slider");
+goog.require("goog.ui.SelectionMenuButton");
 
-wodo.widgets.ZoomSlider = function (container) {
+wodo.widgets.ZoomMenu = function (container) {
     "use strict";
 
     var self = this,
-        extremeZoomFactor = 4,
         editorSession,
-        thumb,
-        slider;
+        menuButton;
 
     function updateSlider(zoomLevel) {
         slider.setValue(100 * Math.log(zoomLevel) / Math.log(extremeZoomFactor));
         thumb.setAttribute("wodo-value", Math.round(zoomLevel * 100) + "%");
-    }
+    };
 
     this.setEditorSession = function (session) {
         var zoomHelper;
@@ -62,16 +59,36 @@ wodo.widgets.ZoomSlider = function (container) {
 
     };
 
-    /*jslint emptyblock: true*/
     this.onToolDone = function () {};
-    /*jslint emptyblock: false*/
 
     function init() {
-        slider = new goog.ui.Slider();
+        var cbb1 = new goog.ui.CustomButton('Add to Family');
+        cbb1.render(goog.dom.getElement('comboButtons'));
+        cbb1.addClassName('goog-custom-button-collapse-right');
+        var cbm1 = new goog.ui.Menu();
+        cbm1.setId('ComboMenu');
+        goog.array.forEach(['Friends', 'Family', 'Coworkers'],
+            function(label) {
+            var item = new goog.ui.MenuItem(label);
+            item.setId(label);
+            item.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+            cbm1.addItem(item);
+            });
 
-        slider.setOrientation(goog.ui.Slider.Orientation.HORIZONTAL);
-        slider.setBlockIncrement(1);
-        slider.setStep(null);
+    menuButton = new goog.ui.SelectionMenuButton();
+
+        b1.setId('zoomSelectButton');
+        b1.render(goog.dom.getElement('menuButtons'));
+        b1.setTooltip('Select menu demo');
+        b1.addItem(new goog.ui.MenuItem('Important'));
+        b1.addItem(new goog.ui.MenuItem('Unimportant'));
+
+        goog.events.listen(goog.dom.getElement('b1_enable'),
+            goog.events.EventType.CLICK,
+            function(e) {
+            b1.setEnabled(e.target.checked);
+            });
+
         slider.setMinimum(-100);
         slider.setMaximum(100);
         slider.setEnabled(true);
@@ -90,3 +107,4 @@ wodo.widgets.ZoomSlider = function (container) {
     // init
     init();
 };
+*/

@@ -258,7 +258,7 @@ var Tools = (function() {
                 createTool(wodo.widgets.ParagraphAlignment, args.directParagraphStylingEnabled);
 
                 // Paragraph Style Selector
-                createWidget(wodo.widgets.CurrentStyle, args.paragraphStyleSelectingEnabled);
+                createTool(wodo.widgets.CurrentStyle, args.paragraphStyleSelectingEnabled);
 /*
                 // Zoom Level Selector
                 createWidget(wodo.widgets.ZoomSlider, args.zoomingEnabled);
