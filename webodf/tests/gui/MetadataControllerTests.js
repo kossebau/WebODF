@@ -124,7 +124,7 @@ gui.MetadataControllerTests = function MetadataControllerTests(runner) {
                 });
                 changes.removedProperties.forEach(function (key) {
                     delete changedMetadata.setProperties[key];
-                    if (changedMetadata.removedProperties.indexOf(key) !== -1) {
+                    if (changedMetadata.removedProperties.indexOf(key) === -1) {
                         changedMetadata.removedProperties.push(key);
                     }
                 });
