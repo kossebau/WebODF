@@ -177,7 +177,8 @@ ops.OperationTests = function OperationTests(runner) {
             opsElement = before.nextElementSibling,
             after = opsElement.nextElementSibling,
             ops = [],
-            op,
+            opElement, opspec,
+            now = Date.now(),
             setup;
         runtime.assert(before.localName === "before", "Expected <before/> in " + name + ".");
         runtime.assert(checkWhitespace(before, "s", " "), "Unexpanded text:s element or text:c attribute found in " + name + ".");
@@ -187,11 +188,20 @@ ops.OperationTests = function OperationTests(runner) {
         runtime.assert(checkWhitespace(after, "s", " "), "Unexpanded text:s element or text:c attribute found in " + name + ".");
         runtime.assert(checkWhitespace(after, "tab", "\t"), "Unexpanded text:tab element found in " + name + ".");
         opsTestHelper.removeInsignificantTextNodes(node);
-        op = opsElement.firstElementChild;
-        while (op) {
-            runtime.assert(op.localName === "op", "Expected <op/> in " + name + ".");
-            ops.push(parseOperation(op));
-            op = op.nextElementSibling;
+        opElement = opsElement.firstElementChild;
+        while (opElement) {
+            runtime.assert(opElement.localName === "op", "Expected <op/> in " + name + ".");
+            opspec = parseOperation(opElement);
+            // default to Alice
+            if (!opspec.memberid) {
+                opspec.memberid = 'Alice';
+            }
+            // default to now
+            if (!opspec.timestamp) {
+                opspec.timestamp = now;
+            }
+            ops.push(opspec);
+            opElement = opElement.nextElementSibling;
         }
         setup = self.setUps.hasOwnProperty(name) ? self.setUps[name]() : null;
         if (hasSetup) {
@@ -259,7 +269,6 @@ ops.OperationTests = function OperationTests(runner) {
             factory = new ops.OperationFactory(),
             i,
             op,
-            events,
             textbefore = getOfficeTextElement(test.before),
             textafter = getOfficeTextElement(test.after),
             styles = t.odfContainer.rootElement.styles,
@@ -290,12 +299,7 @@ ops.OperationTests = function OperationTests(runner) {
         // execute test ops
         for (i = 0; i < test.ops.length; i += 1) {
             op = /**@type {!ops.Operation}*/(factory.create(test.ops[i]));
-            t.odtDocument.prepareOperationExecution(op);
-            events = op.execute(t.odtDocument);
-            if (metabefore) {
-                t.odtDocument.finishOperationExecution(op);
-            }
-            t.odtDocument.emitEvents(events);
+            t.odtDocument.executeOperation(op);
             checkForEmptyTextNodes(t.odtDocument.getCanvas().getElement());
         }
 
@@ -406,18 +410,20 @@ ops.OperationTests = function OperationTests(runner) {
     }
 
     this.setUp = function () {
-        var testarea, properties;
+        var testarea;
         t = {};
         testarea = core.UnitTest.provideTestAreaDiv();
         t.odfcanvas = new odf.OdfCanvas(testarea);
         t.odfContainer = new odf.OdfContainer(odf.OdfContainer.DocumentType.TEXT, null);
         t.odfcanvas.setOdfContainer(t.odfContainer);
         t.odtDocument = new ops.OdtDocument(t.odfcanvas);
-        properties = new ops.MemberProperties();
-        properties.color = "black";
-        properties.fullName = "Alice";
-        properties.imageUrl = "";
-        t.odtDocument.addMember(new ops.Member('Alice', properties));
+        ["Alice", "Bob", "Eve", "Joe"].forEach(function(name) {
+            var properties = new ops.MemberProperties();
+            properties.color = "black";
+            properties.fullName = name;
+            properties.imageUrl = "";
+            t.odtDocument.addMember(new ops.Member(name, properties));
+        });
     };
     this.tearDown = function () {
         t.odfcanvas.destroy(function () { return; });

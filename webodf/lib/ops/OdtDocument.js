@@ -441,9 +441,9 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
      * @param {!ops.Operation} op
      * @return {undefined}
      */
-    this.prepareOperationExecution = function(op) {
+    function prepareOperationExecution(op) {
         eventNotifier.emit(ops.OdtDocument.signalOperationStart, op);
-    };
+    }
 
     /**
      * Called after an operation is executed, this
@@ -454,7 +454,7 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
      * @param {!ops.Operation} op
      * @return {undefined}
      */
-    this.finishOperationExecution = function (op) {
+    function finishOperationExecution(op) {
         var opspec = op.spec(),
             memberId = opspec.memberid,
             date = new Date(opspec.timestamp).toISOString(),
@@ -503,6 +503,33 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         if (op.isEdit) {
             eventNotifier.emit(ops.OdtDocument.signalMetadataUpdated, changedMetadata);
         }
+    }
+
+    /**
+     * @param {!Array.<!ops.Operation.Event>} events
+     * @return {undefined}
+     */
+    function emitEvents(events) {
+        events.forEach(function(event) {
+            eventNotifier.emit(event.eventid, event.args);
+        });
+    }
+
+    /**
+     * @param {!ops.Operation} op
+     * @return {!boolean}
+     */
+    this.executeOperation = function(op) {
+        var events;
+
+        prepareOperationExecution(op);
+        events = op.execute(self);
+        if (events !== null) {
+            finishOperationExecution(op);
+            emitEvents(events);
+            return true;
+        }
+        return false;
     };
 
     /**
@@ -912,16 +939,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
      */
     this.getFormatting = function () {
         return odfCanvas.getFormatting();
-    };
-
-    /**
-     * @param {!Array.<!ops.Operation.Event>} events
-     * @return {undefined}
-     */
-    this.emitEvents = function (events) {
-        events.forEach(function(event) {
-            eventNotifier.emit(event.eventid, event.args);
-        });
     };
 
     /**
