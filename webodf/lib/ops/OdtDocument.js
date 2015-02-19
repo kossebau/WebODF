@@ -438,30 +438,26 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     }
 
     /**
-     * @param {!ops.Operation} op
-     * @return {undefined}
-     */
-    function prepareOperationExecution(op) {
-        eventNotifier.emit(ops.OdtDocument.signalOperationStart, op);
-    }
-
-    /**
      * Called after an operation is executed, this
      * function will check if the operation is an
      * 'edit', and in that case will update the
      * document's metadata, such as dc:creator,
      * meta:editing-cycles, and dc:creator.
      * @param {!ops.Operation} op
+     * @param {!Array.<!ops.Operation.Event>} events
      * @return {undefined}
      */
-    function finishOperationExecution(op) {
+    function finishOperationExecution(op, events) {
         var opspec = op.spec(),
             memberId = opspec.memberid,
             date = new Date(opspec.timestamp).toISOString(),
             odfContainer = odfCanvas.odfContainer(),
-            /**@type{!{setProperties: !Object, removedProperties: ?Array.<!string>}}*/
+            /**@type{!ops.Operation.Event}*/
+            changedMetadataEvent,
+            /**@type{!{setProperties: !Object, removedProperties: !Array.<!string>}}*/
             changedMetadata,
-            fullName;
+            fullName,
+            i;
 
         // If the operation is an edit (that changes the
         // ODF that will be saved), then update metadata.
@@ -472,13 +468,25 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
                 "dc:date": date
             }, null);
 
-            changedMetadata = {
-                setProperties: {
-                    "dc:creator": fullName,
-                    "dc:date": date
-                },
-                removedProperties: []
-            };
+            // find any existing metadataupdated event or create one
+            for (i = 0; i < events.length; i += 1) {
+                if (events[i].eventid === ops.OdtDocument.signalMetadataUpdated) {
+                    changedMetadataEvent = events[i];
+                    changedMetadata = /**@type{!{setProperties: !Object, removedProperties: !Array.<!string>}}*/(changedMetadataEvent.args);
+                    break;
+                }
+            }
+            if (!changedMetadataEvent) {
+                changedMetadata = { setProperties: {}, removedProperties: [] };
+                changedMetadataEvent = {
+                    eventid: ops.OdtDocument.signalMetadataUpdated,
+                    args: changedMetadata
+                };
+                events.push(changedMetadataEvent);
+            }
+
+            changedMetadata.setProperties["dc:creator"] = fullName;
+            changedMetadata.setProperties["dc:date"] = date;
 
             // If no previous op was found in this session,
             // then increment meta:editing-cycles by 1.
@@ -500,16 +508,6 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
 
         eventNotifier.emit(ops.OdtDocument.signalOperationEnd, op);
 
-        if (op.isEdit) {
-            eventNotifier.emit(ops.OdtDocument.signalMetadataUpdated, changedMetadata);
-        }
-    }
-
-    /**
-     * @param {!Array.<!ops.Operation.Event>} events
-     * @return {undefined}
-     */
-    function emitEvents(events) {
         events.forEach(function(event) {
             eventNotifier.emit(event.eventid, event.args);
         });
@@ -522,14 +520,15 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     this.executeOperation = function(op) {
         var events;
 
-        prepareOperationExecution(op);
+        eventNotifier.emit(ops.OdtDocument.signalOperationStart, op);
+
         events = op.execute(self);
-        if (events !== null) {
-            finishOperationExecution(op);
-            emitEvents(events);
-            return true;
+        if (events === null) {
+            return false;
         }
-        return false;
+
+        finishOperationExecution(op, events);
+        return true;
     };
 
     /**
