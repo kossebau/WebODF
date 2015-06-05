@@ -93,7 +93,7 @@ ops.OpRemoveText = function OpRemoveText() {
             }
         });
 
-        odtDocument.handleStepsRemoved({position: position});
+        odtDocument.handleStepsRemoved({position: position}, events);
         odtDocument.downgradeWhitespacesAtPosition(position);
         odtDocument.fixCursorPositions();
         odtDocument.getOdfCanvas().refreshSize();

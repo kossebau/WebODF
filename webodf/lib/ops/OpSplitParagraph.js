@@ -170,7 +170,7 @@ ops.OpSplitParagraph = function OpSplitParagraph() {
         if (domPosition.textNode.length === 0) {
             domPosition.textNode.parentNode.removeChild(domPosition.textNode);
         }
-        odtDocument.handleStepsInserted({position: position});
+        odtDocument.handleStepsInserted({position: position}, events);
 
         if (cursor && moveCursor) {
             odtDocument.moveCursor(memberid, position + 1, 0);

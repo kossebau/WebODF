@@ -984,27 +984,35 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
     };
 
     /**
-     * Process steps being inserted into the document. Will emit a steps inserted signal on
-     * behalf of the caller
+     * Process steps being inserted into the document. Will add a steps inserted signal
+     * to the passed events list
      * @param {!{position: !number}} args
+     * @param {!Array.<!ops.Operation.Event>} events
      * @return {undefined}
      */
-    this.handleStepsInserted = function(args) {
+    this.handleStepsInserted = function(args, events) {
         stepsTranslator.handleStepsInserted(args);
         // signal not used in webodf, but 3rd-party (NVivo)
-        eventNotifier.emit(ops.OdtDocument.signalStepsInserted, args);
+        events.push({
+            eventid: ops.OdtDocument.signalStepsInserted,
+            args: args
+        });
     };
 
     /**
      * Process steps being removed from the document. Will emit a steps removed signal on
      * behalf of the caller
      * @param {!{position: !number}} args
+     * @param {!Array.<!ops.Operation.Event>} events
      * @return {undefined}
      */
-    this.handleStepsRemoved = function(args) {
+    this.handleStepsRemoved = function(args, events) {
         stepsTranslator.handleStepsRemoved(args);
         // signal not used in webodf, but 3rd-party (NVivo)
-        eventNotifier.emit(ops.OdtDocument.signalStepsRemoved, args);
+        events.push({
+            eventid: ops.OdtDocument.signalStepsRemoved,
+            args: args
+        });
     };
 
     /**
