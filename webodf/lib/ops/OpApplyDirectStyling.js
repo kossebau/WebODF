@@ -92,7 +92,7 @@ ops.OpApplyDirectStyling = function OpApplyDirectStyling() {
 
         range.detach();
         odtDocument.getOdfCanvas().refreshCSS();
-        odtDocument.fixCursorPositions(); // The container splits may leave the cursor in an invalid spot
+        odtDocument.fixCursorPositions(events); // The container splits may leave the cursor in an invalid spot
 
         impactedParagraphs.forEach(function (n) {
             events.push({

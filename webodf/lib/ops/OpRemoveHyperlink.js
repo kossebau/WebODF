@@ -56,23 +56,25 @@ ops.OpRemoveHyperlink = function OpRemoveHyperlink() {
         var odtDocument = /**@type{ops.OdtDocument}*/(document),
             range = odtDocument.convertCursorToDomRange(position, length),
             links = odfUtils.getHyperlinkElements(range),
-            node;
+            node,
+            events = [];
 
         runtime.assert(links.length === 1, "The given range should only contain a single link.");
         node = domUtils.mergeIntoParent(/**@type{!Node}*/(links[0]));
         range.detach();
 
-        odtDocument.fixCursorPositions();
+        odtDocument.fixCursorPositions(events);
         odtDocument.getOdfCanvas().refreshSize();
         odtDocument.getOdfCanvas().rerenderAnnotations();
-        return [{
+        events.push({
             eventid: ops.OdtDocument.signalParagraphChanged,
             args: {
                 paragraphElement: odfUtils.getParagraphElement(node),
                 memberId: memberid,
                 timeStamp: timestamp
             }
-        }];
+        });
+        return events;
     };
 
     /**

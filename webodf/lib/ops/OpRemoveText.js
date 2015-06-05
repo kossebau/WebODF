@@ -95,7 +95,7 @@ ops.OpRemoveText = function OpRemoveText() {
 
         odtDocument.handleStepsRemoved({position: position}, events);
         odtDocument.downgradeWhitespacesAtPosition(position);
-        odtDocument.fixCursorPositions();
+        odtDocument.fixCursorPositions(events);
         odtDocument.getOdfCanvas().refreshSize();
         events.push({
             eventid: ops.OdtDocument.signalParagraphChanged,

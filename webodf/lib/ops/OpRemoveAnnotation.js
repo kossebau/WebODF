@@ -95,7 +95,7 @@ ops.OpRemoveAnnotation = function OpRemoveAnnotation() {
         odtDocument.handleStepsRemoved({position: position > 0 ? position - 1 : position}, events);
 
         odtDocument.getOdfCanvas().rerenderAnnotations();
-        odtDocument.fixCursorPositions();
+        odtDocument.fixCursorPositions(events);
 
         return events;
     };

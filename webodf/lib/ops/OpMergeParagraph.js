@@ -271,7 +271,7 @@ ops.OpMergeParagraph = function OpMergeParagraph() {
             events.push({eventid: ops.Document.signalCursorMoved, args:cursor});
         }
 
-        odtDocument.fixCursorPositions();
+        odtDocument.fixCursorPositions(events);
         odtDocument.getOdfCanvas().refreshSize();
         // TODO: signal also the deleted paragraphs, so e.g. SessionView can clean up the EditInfo
         events.push({

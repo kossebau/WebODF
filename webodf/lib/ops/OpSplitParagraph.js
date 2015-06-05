@@ -177,7 +177,7 @@ ops.OpSplitParagraph = function OpSplitParagraph() {
             events.push({eventid: ops.Document.signalCursorMoved, args: cursor});
         }
 
-        odtDocument.fixCursorPositions();
+        odtDocument.fixCursorPositions(events);
         odtDocument.getOdfCanvas().refreshSize();
         // mark both paragraphs as edited
         events.push({

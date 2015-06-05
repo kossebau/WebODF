@@ -154,7 +154,7 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
         initialDoc = rootElement.cloneNode(true);
         odfCanvas.refreshAnnotations();
         // workaround AnnotationViewManager not fixing up cursor positions after creating the highlighting
-        self.fixCursorPositions();
+        self.fixCursorPositions(false);
         return initialDoc;
     };
 
@@ -724,8 +724,14 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
      * walkable positions; if not, move the cursor 1 filtered step backward
      * which guarantees walkable state for all cursors,
      * while keeping them inside the same root. An event will be raised for this cursor if it is moved
+     * @param {!Array.<!ops.Operation.Event>|!boolean} events  array to add events for moved cursors, needs to be otherwise explicitely set to false
+     * @return {undefined}
      */
-    this.fixCursorPositions = function () {
+    this.fixCursorPositions = function (events) {
+        var /** @type{!Array.<!ops.OdtCursor>}*/ movedCursors = [];
+
+        runtime.assert(Array.isArray(events) || (typeof events === "boolean" && events === false), "second parameter to fixCursorPositions needs to be set to false or an event");
+
         Object.keys(cursors).forEach(function (memberId) {
             var cursor = cursors[memberId],
                 root = getRoot(cursor.getNode()),
@@ -768,9 +774,19 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
 
             if (cursorMoved) {
                 cursor.setSelectedRange(selectedRange, cursor.hasForwardSelection());
-                eventNotifier.emit(ops.Document.signalCursorMoved, cursor);
+                movedCursors.push(cursor);
             }
         });
+
+        if (events) {
+            movedCursors.forEach(function(cursor) {
+                events.push({ eventid: ops.Document.signalCursorMoved, args: cursor });
+            });
+        } else {
+            movedCursors.forEach(function(cursor) {
+                eventNotifier.emit(ops.Document.signalCursorMoved, cursor);
+            });
+        }
     };
 
     /**
