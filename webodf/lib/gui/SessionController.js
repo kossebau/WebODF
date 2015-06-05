@@ -304,7 +304,7 @@ gui.SessionControllerOptions = function () {
          * @return {undefined}
          */
         function forwardUndoStackChange(e) {
-            odtDocument.emitSignalUndoStackChanged(e);
+            odtDocument.DONOTUSE_emitSignalUndoStackChanged(e);
         }
 
         /**
@@ -374,7 +374,7 @@ gui.SessionControllerOptions = function () {
                             newSelectionRange.setEnd(shadowCursorIterator.container(), shadowCursorIterator.unfilteredDomOffset());
                         }
                         shadowCursor.setSelectedRange(newSelectionRange, handleEnd === 'right');
-                        odtDocument.emitSignalCursorMoved(shadowCursor);
+                        odtDocument.DONOTUSE_emitSignalCursorMoved(shadowCursor);
                     }
                 }
             }
@@ -400,7 +400,7 @@ gui.SessionControllerOptions = function () {
                         selectionController.expandToParagraphBoundaries(selectionRange.range);
                     }
                     shadowCursor.setSelectedRange(selectionRange.range, selectionRange.hasForwardSelection);
-                    odtDocument.emitSignalCursorMoved(shadowCursor);
+                    odtDocument.DONOTUSE_emitSignalCursorMoved(shadowCursor);
                 }
             }
         }

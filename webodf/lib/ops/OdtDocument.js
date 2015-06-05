@@ -1033,19 +1033,23 @@ ops.OdtDocument = function OdtDocument(odfCanvas) {
 
     /**
      * Emit the signal that the passed cursor moved.
+     * TODO: get rid of this method, noone should be able to emit signals by direct calls, only by op execution
+     * @internal
      * @param {!ops.OdtCursor} cursor
      * @return {undefined}
      */
-    this.emitSignalCursorMoved = function(cursor) {
+    this.DONOTUSE_emitSignalCursorMoved = function(cursor) {
         eventNotifier.emit(ops.Document.signalCursorMoved, cursor);
     };
 
     /**
      * Emit the signal that the passed cursor moved.
+     * TODO: get rid of this method, noone should be able to emit signals by direct calls, only by op execution
+     * @internal
      * @param {?Event} e
      * @return {undefined}
      */
-    this.emitSignalUndoStackChanged = function(e) {
+    this.DONOTUSE_emitSignalUndoStackChanged = function(e) {
         eventNotifier.emit(ops.OdtDocument.signalUndoStackChanged, e);
     };
 
